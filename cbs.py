@@ -13,6 +13,7 @@ import yaml
 from math import fabs
 from itertools import combinations
 from copy import deepcopy
+import numpy as np
 
 from a_star import AStar
 
@@ -227,7 +228,7 @@ class Environment(object):
 
     def admissible_heuristic(self, state, agent_name):
         goal = self.agent_dict[agent_name]["goal"]
-        return fabs(state.location.x - goal.location.x) + fabs(state.location.y - goal.location.y)
+        return np.sqrt(np.power(fabs(state.location.x - goal.location.x),2) + np.power(fabs(state.location.y - goal.location.y),2))
 
 
     def is_at_goal(self, state, agent_name):
