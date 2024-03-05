@@ -96,9 +96,9 @@ class Constraints(object):
             "EC: " + str([str(ec) for ec in self.edge_constraints])
 
 class Environment(object):
-    def __init__(self, dimension, agents, obstacles):
+    def __init__(self, dimension, agents, nodes):
         self.dimension = dimension
-        self.obstacles = obstacles
+        self.nodes = nodes
 
         self.agents = agents
         self.agent_dict = {}
@@ -112,27 +112,35 @@ class Environment(object):
 
     def get_neighbors(self, state):
         neighbors = []
-
-        # Wait action
         n = State(state.time + 1, state.location,state.startime)
         if self.state_valid(n):
             neighbors.append(n)
-        # Up action
-        n = State(state.time + 1, Location(state.location.x, state.location.y+1),state.startime)
-        if self.state_valid(n) and self.transition_valid(state, n) and n.time > n.startime:
-            neighbors.append(n)
-        # Down action
-        n = State(state.time + 1, Location(state.location.x, state.location.y-1),state.startime)
-        if self.state_valid(n) and self.transition_valid(state, n)  and n.time > n.startime:
-            neighbors.append(n)
-        # Left action
-        n = State(state.time + 1, Location(state.location.x-1, state.location.y),state.startime)
-        if self.state_valid(n) and self.transition_valid(state, n)  and n.time > n.startime:
-            neighbors.append(n)
-        # Right action
-        n = State(state.time + 1, Location(state.location.x+1, state.location.y),state.startime)
-        if self.state_valid(n) and self.transition_valid(state, n)  and n.time > n.startime:
-            neighbors.append(n)
+        for options in self.nodes[(n.location.x,n.location.y)]:
+            k = State(state.time + 1, Location(options[0], options[1]),state.startime)
+            if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                neighbors.append(k)
+
+
+        # # Wait action
+        
+        # if self.state_valid(n):
+        #     neighbors.append(n)
+        # # Up action
+        # n = State(state.time + 1, Location(state.location.x, state.location.y+1),state.startime)
+        # if self.state_valid(n) and self.transition_valid(state, n) and n.time > n.startime:
+        #     neighbors.append(n)
+        # # Down action
+        # n = State(state.time + 1, Location(state.location.x, state.location.y-1),state.startime)
+        # if self.state_valid(n) and self.transition_valid(state, n)  and n.time > n.startime:
+        #     neighbors.append(n)
+        # # Left action
+        # n = State(state.time + 1, Location(state.location.x-1, state.location.y),state.startime)
+        # if self.state_valid(n) and self.transition_valid(state, n)  and n.time > n.startime:
+        #     neighbors.append(n)
+        # # Right action
+        # n = State(state.time + 1, Location(state.location.x+1, state.location.y),state.startime)
+        # if self.state_valid(n) and self.transition_valid(state, n)  and n.time > n.startime:
+        #     neighbors.append(n)
         return neighbors
 
 
@@ -207,8 +215,8 @@ class Environment(object):
         
         return state.location.x >= 0 and state.location.x < self.dimension[0] \
             and state.location.y >= 0 and state.location.y < self.dimension[1] \
-            and VertexConstraint(state.time, state.location) not in self.constraints.vertex_constraints \
-            and (state.location.x, state.location.y) not in self.obstacles 
+            and VertexConstraint(state.time, state.location) not in self.constraints.vertex_constraints #\
+          #  and (state.location.x, state.location.y) not in self.obstacles 
         
 
     def transition_valid(self, state_1, state_2):
@@ -340,10 +348,11 @@ def main():
             print(exc)
 
     dimension = param["map"]["dimensions"]
-    obstacles = param["map"]["obstacles"]
+    nodes = param["map"]["nodes"]
     agents = param['agents']
+    vertex_data = {node['vertex']: node['edge'] for node in nodes}
 
-    env = Environment(dimension, agents, obstacles)
+    env = Environment(dimension, agents, vertex_data)
 
     # Searching
     cbs = CBS(env)

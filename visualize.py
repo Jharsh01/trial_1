@@ -3,6 +3,7 @@ import yaml
 import matplotlib
 # matplotlib.use("Agg")
 from matplotlib.patches import Circle, Rectangle, Arrow
+from matplotlib.lines import Line2D
 from matplotlib.collections import PatchCollection
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,7 +28,7 @@ class Animation:
     self.ax = self.fig.add_subplot(111, aspect='equal')
     self.fig.subplots_adjust(left=0,right=1,bottom=0,top=1, wspace=None, hspace=None)
     # self.ax.set_frame_on(False)
-
+    self.lines = []
     self.patches = []
     self.artists = []
     self.agents = dict()
@@ -46,11 +47,19 @@ class Animation:
     # plt.axis('off')
     # self.ax.axis('tight')
     # self.ax.axis('off')
+    
 
     self.patches.append(Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, facecolor='none', edgecolor='red'))
-    for o in map["map"]["obstacles"]:
-      x, y = o[0], o[1]
-      self.patches.append(Rectangle((x - 0.5, y - 0.5), 1, 1, facecolor='red', edgecolor='red'))
+    for node in map["map"]["nodes"]:
+      #print(node['vertex'][0])
+      x, y = node['vertex'][0],node['vertex'][1]
+      self.patches.append(Circle((x, y ), 0.1, facecolor='red', edgecolor='red'))
+      print(node['vertex'],"new vertex")
+      for edge in node['edge']:
+        x1,y1 = edge[0],edge[1]
+        print(x1,y1)
+        self.lines.append( Line2D([x,x1],[y,y1],color='blue'))
+        # self.ax.add_line(line)
 
     # create agents:
     self.T = 0
@@ -99,7 +108,10 @@ class Animation:
       self.ax.add_patch(p)
     for a in self.artists:
       self.ax.add_artist(a)
-    return self.patches + self.artists
+
+    for l in self.lines:
+      self.ax.add_line(l)
+    return self.patches + self.artists 
 
   def animate_func(self, i):
     for agent_name, agent in self.combined_schedule.items():
@@ -112,17 +124,17 @@ class Animation:
       p = (pos[0], pos[1])
       self.agents[agent_name].center = p
       self.agent_names[agent_name].set_position(p)
-      print(agent)
+      #print(agent)
 
     # reset all colors
     m = 0
     for _,agent in self.agents.items():
       if map['agents'][m]['startime'] < i/10:
         agent.set_facecolor(Colors[0])
-        print('color shift')
+        #print('color shift')
       m = m + 1
       
-      print(agent)
+      #print(agent)
 
     # check drive-drive collisions
     agents_array = [agent for _,agent in self.agents.items()]

@@ -1,0 +1,38 @@
+agents:
+-   start: [0, 0]
+    goal: [2, 0]
+    startime: 0
+    name: agent0
+-   start: [2, 0]
+    goal: [2, 2]
+    startime: 0
+    name: agent1
+
+
+map:
+    dimensions: [3, 3]
+    nodes: 
+    -   vertex: !!python/tuple [0,0]
+        edge: 
+            -   !!python/tuple [1,1]
+    -   vertex: !!python/tuple [2,0]
+        edge: 
+            -   !!python/tuple [1,1]
+    -   vertex: !!python/tuple [1,1]
+        edge:
+            -    !!python/tuple [0,0]
+            -    !!python/tuple [2,0]
+            -    !!python/tuple [0,2]
+            -    !!python/tuple [2,2]
+    -   vertex: !!python/tuple [0,2]
+        edge: 
+            -   !!python/tuple [1,1]
+    -   vertex: !!python/tuple [2,2]
+        edge: 
+            -   !!python/tuple [1,1]
+          
+
+
+
+
+
