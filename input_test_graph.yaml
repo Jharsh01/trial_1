@@ -6,7 +6,7 @@ agents:
 -   start: [2, 0]
     goal: [2, 2]
     startime: 0
-    name: agent111
+    name: agent1
 
 
 map:

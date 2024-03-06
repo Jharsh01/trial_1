@@ -6,6 +6,9 @@ author: Ashwin Bose (@atb033)
 
 """
 
+
+import numpy as np
+from math import fabs
 class AStar():
     def __init__(self, env):
         self.agent_dict = env.agent_dict
@@ -25,7 +28,7 @@ class AStar():
         low level search 
         """
         initial_state = self.agent_dict[agent_name]["start"]
-        step_cost = 1
+        time_cost = 1
         
         closed_set = set()
         open_set = {initial_state}
@@ -54,13 +57,20 @@ class AStar():
             for neighbor in neighbor_list:
                 if neighbor in closed_set:
                     continue
+                step_cost = np.sqrt((current.location.x-neighbor.location.x)**2+(current.location.y-neighbor.location.y)**2) + time_cost
+                #step_cost = fabs(current.location.x-neighbor.location.x) + fabs(current.location.y-neighbor.location.y) + 1
+                
+
                 
                 tentative_g_score = g_score.setdefault(current, float("inf")) + step_cost
+                print([current.location.x,current.location.y],[neighbor.location.x,neighbor.location.y],tentative_g_score,g_score.setdefault(neighbor, float("inf")))
 
                 if neighbor not in open_set:
                     open_set |= {neighbor}
                 elif tentative_g_score >= g_score.setdefault(neighbor, float("inf")):
                     continue
+                print("reached here")
+                
 
                 came_from[neighbor] = current
 
