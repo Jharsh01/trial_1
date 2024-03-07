@@ -13,7 +13,7 @@ schedule:
   - t: 3
     x: 2
     y: 0
-  agent111:
+  agent1:
   - t: 0
     x: 2
     y: 0
