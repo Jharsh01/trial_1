@@ -343,7 +343,7 @@ class CBS(object):
             print("before")
             print({'t':state.time, 'x':state.location.x, 'y':state.location.y} for state in path)
             print( "after")
-            path_dict_list = [{'t':state.time, 'x':state.location.x, 'y':state.location.y} for state in path]
+            path_dict_list = [{'t':state.time, 'x':int(state.location.x), 'y':int(state.location.y)} for state in path]
             plan[agent] = path_dict_list
         for agent, path in solution.items():
             for state in path:
@@ -385,11 +385,7 @@ def main():
     if not solution:
         print(" Solution not found" )
         return
-    for agent, path in solution.items():
-        for state in path:
-            print('t',state['t'], 'x',state['x'], 'y',state['y'])
     
-    print(str(cbs.open_set))
 
     # Write to output file
     output = dict()

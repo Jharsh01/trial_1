@@ -21,6 +21,8 @@ class Animation:
     self.schedule = schedule
     self.combined_schedule = {}
     self.combined_schedule.update(self.schedule["schedule"])
+    self.graph = map["Augmented_graph"]
+    self.nodes = map["map"]["node_Location"]
 
     aspect = map["map"]["dimensions"][0] / map["map"]["dimensions"][1]
 
@@ -50,32 +52,35 @@ class Animation:
     
 
     self.patches.append(Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, facecolor='none', edgecolor='red'))
-    for node in map["map"]["nodes"]:
+    count = 0
+    for node in map["map"]["node_Location"]:
       #print(node['vertex'][0])
-      x, y = node['vertex'][0],node['vertex'][1]
+      x, y = node[0],node[1]
       self.patches.append(Circle((x, y ), 0.1, facecolor='red', edgecolor='red'))
-      print(node['vertex'],"new vertex")
-      for edge in node['edge']:
-        x1,y1 = edge[0],edge[1]
+      #print(node['vertex'],"new vertex")
+      for edge in np.nonzero(self.graph[count])[0]:
+        x1,y1 = map["map"]["node_Location"][edge][0],map["map"]["node_Location"][edge][1]
         print(x1,y1)
         self.lines.append( Line2D([x,x1],[y,y1],color='blue'))
         # self.ax.add_line(line)
+      count +=1
 
     # create agents:
     self.T = 0
     # draw goals first
     for d, i in zip(map["agents"], range(0, len(map["agents"]))):
-      self.patches.append(Rectangle((d["goal"][0] - 0.25, d["goal"][1] - 0.25), 0.5, 0.5, facecolor=Colors[0], edgecolor='black', alpha=0.5))
+
+      self.patches.append(Rectangle((self.nodes[d["goal"]][0] - 0.25, self.nodes[d["goal"]][1] - 0.25), 0.5, 0.5, facecolor=Colors[0], edgecolor='black', alpha=0.5))
     for d, i in zip(map["agents"], range(0, len(map["agents"]))):
       
       name = d["name"]
       #print(name)
-      self.agents[name] = Circle((d["start"][0], d["start"][1]), 0.3, facecolor=Colors[3], edgecolor='black')
+      self.agents[name] = Circle((self.nodes[d["start"]][0], self.nodes[d["start"]][1]), 0.3, facecolor=Colors[3], edgecolor='black')
       self.agents[name].original_face_color = Colors[0]
       self.patches.append(self.agents[name])
       self.T = max(self.T, schedule["schedule"][name][-1]["t"])
       
-      self.agent_names[name] = self.ax.text(d["start"][0], d["start"][1], name.replace('agent', ''))
+      self.agent_names[name] = self.ax.text(self.nodes[d["start"]][0], self.nodes[d["start"]][0], name.replace('agent', ''))
       self.agent_names[name].set_horizontalalignment('center')
       self.agent_names[name].set_verticalalignment('center')
       self.artists.append(self.agent_names[name])

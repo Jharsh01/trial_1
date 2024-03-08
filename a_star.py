@@ -60,9 +60,9 @@ class AStar():
                 if neighbor in closed_set:
                     continue
                 index_c = np.where(np.all(self.nodes == [current.location.x,current.location.y],axis =1))[0][0]
-                print("current",current.location.x,current.location.y)
-                print("neighbor",neighbor.location.x,neighbor.location.y)
-                print(self.nodes)
+                # print("current",current.location.x,current.location.y)
+                # print("neighbor",neighbor.location.x,neighbor.location.y)
+                # print(self.nodes)
                 index_n = np.where(np.all(self.nodes == [neighbor.location.x,neighbor.location.y],axis =1))[0][0]
                 step_cost =  self.graph[index_c][index_n] + time_cost
                 #step_cost = fabs(current.location.x-neighbor.location.x) + fabs(current.location.y-neighbor.location.y) + 1
@@ -70,14 +70,14 @@ class AStar():
 
                 
                 tentative_g_score = g_score.setdefault(current, float("inf")) + step_cost
-                print("step_cost",step_cost,"current",index_c,"neighbour",index_n,"tentative_g",tentative_g_score,"potencial",g_score.setdefault(neighbor, float("inf")))
+               # print("step_cost",step_cost,"current",index_c,"neighbour",index_n,"tentative_g",tentative_g_score,"potencial",g_score.setdefault(neighbor, float("inf")))
                 
 
                 if neighbor not in open_set:
                     open_set |= {neighbor}
                 elif tentative_g_score >= g_score.setdefault(neighbor, float("inf")):
                     continue
-                print("reached here")
+                #print("reached here")
                 
                 
 
