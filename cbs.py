@@ -362,6 +362,9 @@ def main():
         print(" Solution not found" )
         return
     print(str(cbs.open_set))
+    for agent, path in solution.items():
+        for state in path:
+            print('t',state['t'], 'x',state['x'], 'y',state['y'])
 
     # Write to output file
     output = dict()
