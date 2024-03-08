@@ -10,7 +10,7 @@ sys.path.insert(0, '../')
 import yaml
 import argparse
 
-from cbs.cbs import Location
+from cbs import Location
 
 class Vertex:
     def __init__(self, agent, location, time):

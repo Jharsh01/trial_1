@@ -12,8 +12,8 @@ sys.path.insert(0, '../')
 import yaml
 import argparse
 
-from scheduling.tpg import Vertex, TemporalPlanGraph
-from cbs.cbs import Location
+from tpg import Vertex, TemporalPlanGraph
+from cbs import Location
 
 class Edge:
     """
