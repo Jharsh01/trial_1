@@ -1,8 +1,9 @@
-To implement the code, you may need a few prerequisites, \n
-numpy\n
-matplotlib\n
-scipy\n
-ffmpeg-python\n
+To implement the code, you may need a few prerequisites, 
+•	numpy
+•	matplotlib
+•	scipy
+•	ffmpeg-python
+
 After ensuring that the libraries exist. We can now implement the code.
 
 1)	python3 cbs.py input_test_wgraph.yaml output.yaml
