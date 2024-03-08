@@ -15,6 +15,8 @@ class AStar():
         self.admissible_heuristic = env.admissible_heuristic
         self.is_at_goal = env.is_at_goal
         self.get_neighbors = env.get_neighbors
+        self.graph = env.graph
+        self.nodes = env.nodes
 
     def reconstruct_path(self, came_from, current):
         total_path = [current]
@@ -28,7 +30,7 @@ class AStar():
         low level search 
         """
         initial_state = self.agent_dict[agent_name]["start"]
-        time_cost = 1
+        time_cost =1
         
         closed_set = set()
         open_set = {initial_state}
@@ -57,19 +59,26 @@ class AStar():
             for neighbor in neighbor_list:
                 if neighbor in closed_set:
                     continue
-                step_cost = np.sqrt((current.location.x-neighbor.location.x)**2+(current.location.y-neighbor.location.y)**2) + time_cost
+                index_c = np.where(np.all(self.nodes == [current.location.x,current.location.y],axis =1))[0][0]
+                print("current",current.location.x,current.location.y)
+                print("neighbor",neighbor.location.x,neighbor.location.y)
+                print(self.nodes)
+                index_n = np.where(np.all(self.nodes == [neighbor.location.x,neighbor.location.y],axis =1))[0][0]
+                step_cost =  self.graph[index_c][index_n] + time_cost
                 #step_cost = fabs(current.location.x-neighbor.location.x) + fabs(current.location.y-neighbor.location.y) + 1
                 
 
                 
                 tentative_g_score = g_score.setdefault(current, float("inf")) + step_cost
-                print([current.location.x,current.location.y],[neighbor.location.x,neighbor.location.y],tentative_g_score,g_score.setdefault(neighbor, float("inf")))
+                print("step_cost",step_cost,"current",index_c,"neighbour",index_n,"tentative_g",tentative_g_score,"potencial",g_score.setdefault(neighbor, float("inf")))
+                
 
                 if neighbor not in open_set:
                     open_set |= {neighbor}
                 elif tentative_g_score >= g_score.setdefault(neighbor, float("inf")):
                     continue
                 print("reached here")
+                
                 
 
                 came_from[neighbor] = current

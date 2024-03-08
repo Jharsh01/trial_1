@@ -97,10 +97,10 @@ class Constraints(object):
             "EC: " + str([str(ec) for ec in self.edge_constraints])
 
 class Environment(object):
-    def __init__(self, dimension, agents, nodes):
+    def __init__(self, dimension, agents, graph, nodes):
         self.dimension = dimension
         self.nodes = nodes
-
+        self.graph = graph
         self.agents = agents
         self.agent_dict = {}
 
@@ -116,10 +116,18 @@ class Environment(object):
         n = State(state.time + 1, state.location,state.startime)
         if self.state_valid(n):
             neighbors.append(n)
-        for options in self.nodes[(n.location.x,n.location.y)]:
-            k = State(state.time + 1, Location(options[0], options[1]),state.startime)
+        index = np.where(np.all(self.nodes == [n.location.x,n.location.y],axis =1))[0][0]
+        #print("index",index)
+        #print(self.graph[index])
+        #print("non zeros index",np.nonzero(self.graph[index])[0])
+        for options in np.nonzero(self.graph[index])[0]:
+            #print("options",options)
+            #print("node",self.nodes[options])
+            k = State(state.time + 1, Location(self.nodes[options][0],self.nodes[options][1]),state.startime)
+            
             if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                 neighbors.append(k)
+                #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
 
 
         # # Wait action
@@ -228,6 +236,7 @@ class Environment(object):
 
     def admissible_heuristic(self, state, agent_name):
         goal = self.agent_dict[agent_name]["goal"]
+       #print("this is a goal",goal.location.x,goal.location.y)
         return np.sqrt(np.power(fabs(state.location.x - goal.location.x),2) + np.power(fabs(state.location.y - goal.location.y),2))
 
 
@@ -238,8 +247,9 @@ class Environment(object):
     def make_agent_dict(self):
         #print(self.agents)
         for agent in self.agents:
-            start_state = State(0, Location(agent['start'][0], agent['start'][1]),agent['startime'])
-            goal_state = State(0, Location(agent['goal'][0], agent['goal'][1]),agent['startime'])
+            print(self.nodes[agent['start']][0],self.nodes[agent['start']][1])
+            start_state = State(0, Location(self.nodes[agent['start']][0], self.nodes[agent['start']][1]),agent['startime'])
+            goal_state = State(0, Location(self.nodes[agent['goal']][0], self.nodes[agent['goal']][1]),agent['startime'])
             
 
             self.agent_dict.update({agent['name']:{'start':start_state, 'goal':goal_state, 'startime':agent['startime']}})
@@ -330,8 +340,16 @@ class CBS(object):
     def generate_plan(self, solution):
         plan = {}
         for agent, path in solution.items():
+            print("before")
+            print({'t':state.time, 'x':state.location.x, 'y':state.location.y} for state in path)
+            print( "after")
             path_dict_list = [{'t':state.time, 'x':state.location.x, 'y':state.location.y} for state in path]
             plan[agent] = path_dict_list
+        for agent, path in solution.items():
+            for state in path:
+
+                print('t',state.time, 'x',state.location.x, 'y',state.location.y)
+
         return plan
 
 
@@ -349,11 +367,17 @@ def main():
             print(exc)
 
     dimension = param["map"]["dimensions"]
-    nodes = param["map"]["nodes"]
+    nodes = param["map"]["node_Location"]
+    graph = param["Augmented_graph"]
     agents = param['agents']
-    vertex_data = {node['vertex']: node['edge'] for node in nodes}
+    nodes = np.array(nodes)
+    graph = np.array(graph)
+    print(nodes)
+    print(graph)
+    
+    #vertex_data = {node['vertex']: node['edge'] for node in nodes}
 
-    env = Environment(dimension, agents, vertex_data)
+    env = Environment(dimension, agents, graph,nodes)
 
     # Searching
     cbs = CBS(env)
@@ -361,6 +385,10 @@ def main():
     if not solution:
         print(" Solution not found" )
         return
+    for agent, path in solution.items():
+        for state in path:
+            print('t',state['t'], 'x',state['x'], 'y',state['y'])
+    
     print(str(cbs.open_set))
 
     # Write to output file
