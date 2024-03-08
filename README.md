@@ -1,8 +1,8 @@
-To implement the code, you may need a few prerequisites, 
-•	numpy
-•	matplotlib
-•	scipy
-•	ffmpeg-python
+To implement the code, you may need a few prerequisites, <br>
+•	numpy<br>
+•	matplotlib<br>
+•	scipy<br>
+•	ffmpeg-python<br>
 
 After ensuring that the libraries exist. We can now implement the code.
 
