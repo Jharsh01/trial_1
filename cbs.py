@@ -130,6 +130,9 @@ class Environment(object):
                 #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
 
 
+
+
+
         # # Wait action
         
         # if self.state_valid(n):
@@ -393,6 +396,7 @@ def main():
     output["cost"] = env.compute_solution_cost(solution)
     with open(args.output, 'w') as output_yaml:
         yaml.safe_dump(output, output_yaml)
+    print("checking for timepass")
 
 
 if __name__ == "__main__":
