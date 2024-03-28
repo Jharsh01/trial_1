@@ -17,6 +17,7 @@ class AStar():
         self.get_neighbors = env.get_neighbors
         self.graph = env.graph
         self.nodes = env.nodes
+        self.edge_info = env.edge_info
 
     def reconstruct_path(self, came_from, current):
         total_path = [current]
@@ -59,12 +60,13 @@ class AStar():
             for neighbor in neighbor_list:
                 if neighbor in closed_set:
                     continue
-                index_c = np.where(np.all(self.nodes == [current.location.x,current.location.y],axis =1))[0][0]
+                #index_c = np.where(np.all(self.nodes == [current.location.x,current.location.y],axis =1))[0][0]
                 # print("current",current.location.x,current.location.y)
                 # print("neighbor",neighbor.location.x,neighbor.location.y)
                 # print(self.nodes)
-                index_n = np.where(np.all(self.nodes == [neighbor.location.x,neighbor.location.y],axis =1))[0][0]
-                step_cost =  self.graph[index_c][index_n] + time_cost
+                #index_n = np.where(np.all(self.nodes == [neighbor.location.x,neighbor.location.y],axis =1))[0][0]
+                
+                step_cost = np.sqrt((current.location.x - neighbor.location.x)**2 +(current.location.y - neighbor.location.y)**2) + time_cost
                 #step_cost = fabs(current.location.x-neighbor.location.x) + fabs(current.location.y-neighbor.location.y) + 1
                 
 

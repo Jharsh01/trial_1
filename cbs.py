@@ -108,30 +108,42 @@ class Environment(object):
 
         self.constraints = Constraints()
         self.constraint_dict = {}
+        self.edge_info = {}
 
         self.a_star = AStar(self)
+        
 
     def get_neighbors(self, state):
         neighbors = []
         n = State(state.time + 1, state.location,state.startime)
         if self.state_valid(n):
             neighbors.append(n)
-        index = np.where(np.all(self.nodes == [n.location.x,n.location.y],axis =1))[0][0]
-        #print("index",index)
-        #print(self.graph[index])
-        #print("non zeros index",np.nonzero(self.graph[index])[0])
-        for options in np.nonzero(self.graph[index])[0]:
-            #print("options",options)
-            #print("node",self.nodes[options])
-            k = State(state.time + 1, Location(self.nodes[options][0],self.nodes[options][1]),state.startime)
-            
+
+        try:
+            index = np.where(np.all(self.nodes == [n.location.x,n.location.y],axis =1))[0][0]
+            for options in np.nonzero(self.graph[index])[0]:
+                #print("options",options)
+                #print("node",self.nodes[options])
+                sin = self.nodes[options][1]-state.location.y
+                cos = self.nodes[options][0]-state.location.x
+                hyp = np.sqrt((self.nodes[options][0]-state.location.x)**2 + (self.nodes[options][1]-state.location.y)**2)
+                dist = self.graph[index][options]
+                print("dist",dist,"hpy",hyp)
+                x = state.location.x + (cos/hyp)*(1/dist)
+                y = state.location.y + (sin/hyp)*(1/dist)
+                self.edge_info[tuple((x,y))] = [(cos/hyp)*(1/dist),(sin/hyp)*(1/dist),1/dist]
+                k = State(state.time + 1/dist, Location(x,y),state.startime)            
+                if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                    neighbors.append(k)
+                    #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
+
+        except:
+            x = state.location.x + self.edge_info[(state.location.x,state.location.y)][0]
+            y = state.location.y + self.edge_info[(state.location.x,state.location.y)][1]
+            time = self.edge_info[(state.location.x,state.location.y)][2]
+            k = State(state.time + time, Location(x,y),state.startime)            
             if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                 neighbors.append(k)
-                #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
-
-
-
-
 
         # # Wait action
         
@@ -225,9 +237,7 @@ class Environment(object):
 
     def state_valid(self, state):
         
-        return state.location.x >= 0 and state.location.x < self.dimension[0] \
-            and state.location.y >= 0 and state.location.y < self.dimension[1] \
-            and VertexConstraint(state.time, state.location) not in self.constraints.vertex_constraints #\
+        return VertexConstraint(state.time, state.location) not in self.constraints.vertex_constraints #\
           #  and (state.location.x, state.location.y) not in self.obstacles 
         
 
