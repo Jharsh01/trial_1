@@ -131,16 +131,18 @@ class Environment(object):
                 print("dist",dist,"hpy",hyp)
                 x = state.location.x + (cos/hyp)*(1/dist)
                 y = state.location.y + (sin/hyp)*(1/dist)
-                self.edge_info[tuple((x,y))] = [(cos/hyp)*(1/dist),(sin/hyp)*(1/dist),1/dist]
+                self.edge_info[x+y] = [(cos/hyp)*(1/dist),(sin/hyp)*(1/dist),1/dist]
                 k = State(state.time + 1/dist, Location(x,y),state.startime)            
                 if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                     neighbors.append(k)
                     #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
 
         except:
-            x = state.location.x + self.edge_info[(state.location.x,state.location.y)][0]
-            y = state.location.y + self.edge_info[(state.location.x,state.location.y)][1]
-            time = self.edge_info[(state.location.x,state.location.y)][2]
+            print(self.edge_info.keys())
+            x = state.location.x + self.edge_info[state.location.x+state.location.y][0]
+            y = state.location.y + self.edge_info[state.location.x+state.location.y][0]            
+            time = self.edge_info[state.location.x+state.location.y][2]
+            self.edge_info[x+y] = [self.edge_info[state.location.x+state.location.y][0],self.edge_info[state.location.x+state.location.y][0],time]
             k = State(state.time + time, Location(x,y),state.startime)            
             if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                 neighbors.append(k)
