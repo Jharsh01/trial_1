@@ -44,6 +44,7 @@ class Conflict(object):
     VERTEX = 1
     EDGE = 2
     PASSOVER = 3
+    TO_CLOSE = 4
     def __init__(self):
         self.time = -1
         self.type = -1
@@ -230,6 +231,32 @@ class Environment(object):
                         result.location_1 = state_1a.location
                         result.location_2 = state_1b.location
                         return result
+                    
+                for agent_1, agent_2 in combinations(solution.keys(), 2):
+                    state_1 = self.get_state(agent_1, solution, t)
+                    state_2 = self.get_state(agent_2, solution, k)
+                    #print("1 time",state_1.time,"2 time",state_2.time)
+                    if state_1.startime > state_1.time  or state_2.startime > state_2.time:
+                        continue 
+                    if state_1.location == state_2.location and np.abs(state_1.time - state_2.time) < 2:
+                        print("new type")
+                        if state_1.time < state_2.time:
+                            result.time = state_1.time
+                            result.time_1b = state_2.time
+                            result.type = Conflict.TO_CLOSE
+                            result.location_1 = state_1.location
+                            result.agent_1 = agent_1
+                            result.agent_2 = agent_2
+                            return result
+                        else :
+                            result.time = state_2.time
+                            result.time = state_1.time
+                            result.type = Conflict.TO_CLOSE
+                            result.location_1 = state_1.location
+                            result.agent_1 = agent_1
+                            result.agent_2 = agent_2
+                            return result
+                    
         return False
 
     def create_constraints_from_conflict(self, conflict):
@@ -270,7 +297,14 @@ class Environment(object):
             #constraint_dict[conflict.agent_1] = constraint1
             constraint_dict[conflict.agent_2] = constraint2
             print(str(e_constraint2))
-        
+        if conflict.type == Conflict.TO_CLOSE:
+            print("touchedv")
+            v_constraint = VertexConstraint(conflict.time_1b, conflict.location_1)
+            constraint = Constraints()
+            constraint.vertex_constraints |= {v_constraint}
+            #constraint_dict[conflict.agent_1] = constraint
+            constraint_dict[conflict.agent_2] = constraint
+
 
         return constraint_dict
 
