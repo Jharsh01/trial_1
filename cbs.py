@@ -182,7 +182,7 @@ class Environment(object):
                 for agent_1, agent_2 in combinations(solution.keys(), 2):
                     state_1 = self.get_state(agent_1, solution, t)
                     state_2 = self.get_state(agent_2, solution, k)
-                    print("1 time",state_1.time,"2 time",state_2.time)
+                    #print("1 time",state_1.time,"2 time",state_2.time)
                     if state_1.startime > state_1.time  or state_2.startime > state_2.time:
                         continue 
                     if state_1 == state_2:
@@ -217,9 +217,9 @@ class Environment(object):
                     state_2a = self.get_state(agent_2, solution, k)
                     state_2b = self.get_state(agent_2, solution, k+1)
                     if state_1a.startime > state_1a.time  or state_2a.startime > state_2a.time or state_1b.startime > state_1b.time  or state_2b.startime > state_2b.time:
-                        continue 
+                        continue
 
-                    if state_1a.time < state_1b.time and state_2a.time > state_1b.time and state_1a.location==state_2b.location and state_1b.location==state_2a.location :
+                    if state_1a.time < state_2a.time and state_2a.time < state_1b.time and state_1a.location==state_2b.location and state_1b.location==state_2a.location :
                         result.time = state_1a.time
                         result.time_1b = state_1b.time
                         result.type = Conflict.PASSOVER
