@@ -136,10 +136,16 @@ class Environment(object):
                 x = round(self.nodes[options][0]- (cos/hyp)*(2/dist),2)
                 y = round(self.nodes[options][1] - (sin/hyp)*(2/dist),2)
                 print(int(x+y)*100)
-                self.edge_info[int((x+y)*100)] = [self.nodes[options][0],self.nodes[options][1]]
-                k = State(state.time + int( self.graph[index][options]-2), Location(x,y),state.startime)            
-                if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
-                    neighbors.append(k)
+                if self.graph[index][options] > 5:
+                    self.edge_info[int((x+y)*100)] = [self.nodes[options][0],self.nodes[options][1]]
+                    k = State(state.time + int( self.graph[index][options]-2), Location(x,y),state.startime)            
+                    if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                        neighbors.append(k)
+                else :
+                    k = State(state.time + int( self.graph[index][options]), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
+                    if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                        neighbors.append(k)
+
                     #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
 
         except:
