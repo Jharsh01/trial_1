@@ -43,9 +43,11 @@ class State(object):
 class Conflict(object):
     VERTEX = 1
     EDGE = 2
+    PASSOVER = 3
     def __init__(self):
         self.time = -1
         self.type = -1
+        self.time_1b = -1
 
         self.agent_1 = ''
         self.agent_2 = ''
@@ -82,6 +84,7 @@ class EdgeConstraint(object):
         return hash(str(self.time) + str(self.location_1) + str(self.location_2))
     def __str__(self):
         return '(' + str(self.time) + ', '+ str(self.location_1) +', '+ str(self.location_2) + ')'
+#class 
 
 class Constraints(object):
     def __init__(self):
@@ -119,33 +122,33 @@ class Environment(object):
         if self.state_valid(n):
             neighbors.append(n)
 
-        try:
-            index = np.where(np.all(self.nodes == [n.location.x,n.location.y],axis =1))[0][0]
-            for options in np.nonzero(self.graph[index])[0]:
-                #print("options",options)
-                #print("node",self.nodes[options])
-                sin = self.nodes[options][1]-state.location.y
-                cos = self.nodes[options][0]-state.location.x
-                hyp = np.sqrt((self.nodes[options][0]-state.location.x)**2 + (self.nodes[options][1]-state.location.y)**2)
-                dist = self.graph[index][options]
-                print("dist",dist,"hpy",hyp)
-                x = state.location.x + (cos/hyp)*(1/dist)
-                y = state.location.y + (sin/hyp)*(1/dist)
-                self.edge_info[x+y] = [(cos/hyp)*(1/dist),(sin/hyp)*(1/dist),1/dist]
-                k = State(state.time + 1/dist, Location(x,y),state.startime)            
-                if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
-                    neighbors.append(k)
-                    #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
-
-        except:
-            print(self.edge_info.keys())
-            x = state.location.x + self.edge_info[state.location.x+state.location.y][0]
-            y = state.location.y + self.edge_info[state.location.x+state.location.y][0]            
-            time = self.edge_info[state.location.x+state.location.y][2]
-            self.edge_info[x+y] = [self.edge_info[state.location.x+state.location.y][0],self.edge_info[state.location.x+state.location.y][0],time]
-            k = State(state.time + time, Location(x,y),state.startime)            
+        #try:
+        index = np.where(np.all(self.nodes == [n.location.x,n.location.y],axis =1))[0][0]
+        for options in np.nonzero(self.graph[index])[0]:
+            #print("options",options)
+            #print("node",self.nodes[options])
+            # sin = self.nodes[options][1]-state.location.y
+            # cos = self.nodes[options][0]-state.location.x
+            # hyp = np.sqrt((self.nodes[options][0]-state.location.x)**2 + (self.nodes[options][1]-state.location.y)**2)
+            # dist = self.graph[index][options]
+            # print("dist",dist,"hpy",hyp)
+            # x = state.location.x + (cos/hyp)*(1/dist)
+            # y = state.location.y + (sin/hyp)*(1/dist)
+            # self.edge_info[x+y] = [(cos/hyp)*(1/dist),(sin/hyp)*(1/dist),1/dist]
+            k = State(state.time + int( self.graph[index][options]), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
             if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                 neighbors.append(k)
+                    #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
+
+        # except:
+        #     print(self.edge_info.keys())
+        #     x = state.location.x + self.edge_info[state.location.x+state.location.y][0]
+        #     y = state.location.y + self.edge_info[state.location.x+state.location.y][0]            
+        #     time = self.edge_info[state.location.x+state.location.y][2]
+        #     self.edge_info[x+y] = [self.edge_info[state.location.x+state.location.y][0],self.edge_info[state.location.x+state.location.y][0],time]
+        #     k = State(state.time + time, Location(x,y),state.startime)            
+        #     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+        #         neighbors.append(k)
 
         # # Wait action
         
@@ -172,43 +175,65 @@ class Environment(object):
 
     def get_first_conflict(self, solution):
         max_t = max([len(plan) for plan in solution.values()])
+        print(max_t)
         result = Conflict()
         for t in range(max_t):
-            for agent_1, agent_2 in combinations(solution.keys(), 2):
-                state_1 = self.get_state(agent_1, solution, t)
-                state_2 = self.get_state(agent_2, solution, t)
-                if state_1.startime > t  or state_2.startime > t:
-                    continue 
-                if state_1.is_equal_except_time(state_2):
-                    result.time = t
-                    result.type = Conflict.VERTEX
-                    result.location_1 = state_1.location
-                    result.agent_1 = agent_1
-                    result.agent_2 = agent_2
-                    return result
+            for k in range(max_t):
+                for agent_1, agent_2 in combinations(solution.keys(), 2):
+                    state_1 = self.get_state(agent_1, solution, t)
+                    state_2 = self.get_state(agent_2, solution, k)
+                    print("1 time",state_1.time,"2 time",state_2.time)
+                    if state_1.startime > state_1.time  or state_2.startime > state_2.time:
+                        continue 
+                    if state_1 == state_2:
+                        result.time = state_1.time
+                        result.type = Conflict.VERTEX
+                        result.location_1 = state_1.location
+                        result.agent_1 = agent_1
+                        result.agent_2 = agent_2
+                        return result
 
-            for agent_1, agent_2 in combinations(solution.keys(), 2):
-                state_1a = self.get_state(agent_1, solution, t)
-                state_1b = self.get_state(agent_1, solution, t+1)
+                for agent_1, agent_2 in combinations(solution.keys(), 2):
+                    state_1a = self.get_state(agent_1, solution, t)
+                    state_1b = self.get_state(agent_1, solution, t+1)
 
-                state_2a = self.get_state(agent_2, solution, t)
-                state_2b = self.get_state(agent_2, solution, t+1)
-                if state_1a.startime > t  or state_2a.startime > t or state_1b.startime > t  or state_2b.startime > t:
-                    continue 
+                    state_2a = self.get_state(agent_2, solution, k)
+                    state_2b = self.get_state(agent_2, solution, k+1)
+                    if state_1a.startime > state_1a.time  or state_2a.startime > state_2a.time or state_1b.startime > state_1b.time  or state_2b.startime > state_2b.time:
+                        continue 
 
-                if state_1a.is_equal_except_time(state_2b) and state_1b.is_equal_except_time(state_2a):
-                    result.time = t
-                    result.type = Conflict.EDGE
-                    result.agent_1 = agent_1
-                    result.agent_2 = agent_2
-                    result.location_1 = state_1a.location
-                    result.location_2 = state_1b.location
-                    return result
+                    if state_1a==state_2b and state_1b==state_2a:
+                        result.time = state_2a.time
+                        result.type = Conflict.EDGE
+                        result.agent_1 = agent_1
+                        result.agent_2 = agent_2
+                        result.location_1 = state_1a.location
+                        result.location_2 = state_1b.location
+                        return result
+                for agent_1, agent_2 in combinations(solution.keys(), 2):
+                    state_1a = self.get_state(agent_1, solution, t)
+                    state_1b = self.get_state(agent_1, solution, t+1)
+
+                    state_2a = self.get_state(agent_2, solution, k)
+                    state_2b = self.get_state(agent_2, solution, k+1)
+                    if state_1a.startime > state_1a.time  or state_2a.startime > state_2a.time or state_1b.startime > state_1b.time  or state_2b.startime > state_2b.time:
+                        continue 
+
+                    if state_1a.time < state_1b.time and state_2a.time > state_1b.time and state_1a.location==state_2b.location and state_1b.location==state_2a.location :
+                        result.time = state_1a.time
+                        result.time_1b = state_1b.time
+                        result.type = Conflict.PASSOVER
+                        result.agent_1 = agent_1
+                        result.agent_2 = agent_2
+                        result.location_1 = state_1a.location
+                        result.location_2 = state_1b.location
+                        return result
         return False
 
     def create_constraints_from_conflict(self, conflict):
         constraint_dict = {}
         if conflict.type == Conflict.VERTEX:
+            print("touchedv")
             v_constraint = VertexConstraint(conflict.time, conflict.location_1)
             constraint = Constraints()
             constraint.vertex_constraints |= {v_constraint}
@@ -216,11 +241,26 @@ class Environment(object):
             constraint_dict[conflict.agent_2] = constraint
 
         elif conflict.type == Conflict.EDGE:
+            print("touchede")
             constraint1 = Constraints()
             constraint2 = Constraints()
 
             e_constraint1 = EdgeConstraint(conflict.time, conflict.location_1, conflict.location_2)
             e_constraint2 = EdgeConstraint(conflict.time, conflict.location_2, conflict.location_1)
+
+            constraint1.edge_constraints |= {e_constraint1}
+            constraint2.edge_constraints |= {e_constraint2}
+
+            constraint_dict[conflict.agent_1] = constraint1
+            constraint_dict[conflict.agent_2] = constraint2
+
+        elif conflict.type == Conflict.PASSOVER:
+            constraint1 = Constraints()
+            constraint2 = Constraints()
+            print("touched")
+
+            e_constraint1 = EdgeConstraint(conflict.time, conflict.location_1, conflict.location_2)
+            e_constraint2 = EdgeConstraint(conflict.time_1b, conflict.location_2, conflict.location_1)
 
             constraint1.edge_constraints |= {e_constraint1}
             constraint2.edge_constraints |= {e_constraint2}
@@ -281,7 +321,23 @@ class Environment(object):
         return solution
 
     def compute_solution_cost(self, solution):
-        return sum([len(path) for path in solution.values()])
+        cost = 0
+        for agent, path in solution.items():
+            last_state = path[-1]  # Get the last state in the path
+            print(last_state)
+            print("solution_state", last_state.time)  # Assuming 'time' is a key in the state dictionary
+            cost += int(last_state.time)  # Update the cost
+        return cost
+        #return sum([path[len(path)-1].time for path in solution.values()])
+    def compute_solution_cost_final(self, solution):
+        cost = 0
+        for agent, path in solution.items():
+            last_state = path[-1]  # Get the last state in the path
+            print(last_state)
+              # Assuming 'time' is a key in the state dictionary
+            cost += int(last_state['t'])  # Update the cost
+            print(cost)
+        return cost
 
 class HighLevelNode(object):
     def __init__(self):
@@ -318,6 +374,7 @@ class CBS(object):
         start.cost = self.env.compute_solution_cost(start.solution)
 
         self.open_set |= {start}
+        print("visible",min(self.open_set))
         
 
         while self.open_set:
@@ -327,12 +384,15 @@ class CBS(object):
             #print(P)
 
             self.env.constraint_dict = P.constraint_dict
+            
             conflict_dict = self.env.get_first_conflict(P.solution)
+            print(conflict_dict)
             if not conflict_dict:
                 print("solution found")
 
                 return self.generate_plan(P.solution)
             print(self.open_set)
+            print("constarint found")
 
             constraint_dict = self.env.create_constraints_from_conflict(conflict_dict)
 
@@ -360,6 +420,8 @@ class CBS(object):
             print( "after")
             path_dict_list = [{'t':state.time, 'x':int(state.location.x), 'y':int(state.location.y)} for state in path]
             plan[agent] = path_dict_list
+        for m in self.env.constraint_dict.values():
+            print(str(m))
         for agent, path in solution.items():
             for state in path:
 
@@ -405,7 +467,9 @@ def main():
     # Write to output file
     output = dict()
     output["schedule"] = solution
-    output["cost"] = env.compute_solution_cost(solution)
+    print()
+    temp = env.compute_solution_cost_final(solution)
+    output["cost"] = temp
     with open(args.output, 'w') as output_yaml:
         yaml.safe_dump(output, output_yaml)
     print("checking for timepass")
