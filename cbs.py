@@ -220,8 +220,10 @@ class Environment(object):
                         continue
 
                     if state_1a.time < state_2a.time and state_2a.time < state_1b.time and state_1a.location==state_2b.location and state_1b.location==state_2a.location :
+                    
+                        
                         result.time = state_1a.time
-                        result.time_1b = state_1b.time
+                        result.time_1b = state_2a.time
                         result.type = Conflict.PASSOVER
                         result.agent_1 = agent_1
                         result.agent_2 = agent_2
@@ -259,14 +261,15 @@ class Environment(object):
             constraint2 = Constraints()
             print("touched")
 
-            e_constraint1 = EdgeConstraint(conflict.time, conflict.location_1, conflict.location_2)
+            #e_constraint1 = EdgeConstraint(conflict.time, conflict.location_1, conflict.location_2)
             e_constraint2 = EdgeConstraint(conflict.time_1b, conflict.location_2, conflict.location_1)
 
-            constraint1.edge_constraints |= {e_constraint1}
+            #constraint1.edge_constraints |= {e_constraint1}
             constraint2.edge_constraints |= {e_constraint2}
 
-            constraint_dict[conflict.agent_1] = constraint1
+            #constraint_dict[conflict.agent_1] = constraint1
             constraint_dict[conflict.agent_2] = constraint2
+            print(str(e_constraint2))
         
 
         return constraint_dict
@@ -302,13 +305,13 @@ class Environment(object):
     def make_agent_dict(self):
         #print(self.agents)
         for agent in self.agents:
-            print(self.nodes[agent['start']][0],self.nodes[agent['start']][1])
+            #print(self.nodes[agent['start']][0],self.nodes[agent['start']][1])
             start_state = State(0, Location(self.nodes[agent['start']][0], self.nodes[agent['start']][1]),agent['startime'])
             goal_state = State(0, Location(self.nodes[agent['goal']][0], self.nodes[agent['goal']][1]),agent['startime'])
             
 
             self.agent_dict.update({agent['name']:{'start':start_state, 'goal':goal_state, 'startime':agent['startime']}})
-            print(self.agent_dict)
+            #print(self.agent_dict)
 
     def compute_solution(self):
         solution = {}
@@ -324,8 +327,8 @@ class Environment(object):
         cost = 0
         for agent, path in solution.items():
             last_state = path[-1]  # Get the last state in the path
-            print(last_state)
-            print("solution_state", last_state.time)  # Assuming 'time' is a key in the state dictionary
+            #print(last_state)
+            #print("solution_state", last_state.time)  # Assuming 'time' is a key in the state dictionary
             cost += int(last_state.time)  # Update the cost
         return cost
         #return sum([path[len(path)-1].time for path in solution.values()])
@@ -333,10 +336,10 @@ class Environment(object):
         cost = 0
         for agent, path in solution.items():
             last_state = path[-1]  # Get the last state in the path
-            print(last_state)
+            #print(last_state)
               # Assuming 'time' is a key in the state dictionary
             cost += int(last_state['t'])  # Update the cost
-            print(cost)
+            #print(cost)
         return cost
 
 class HighLevelNode(object):
@@ -374,7 +377,7 @@ class CBS(object):
         start.cost = self.env.compute_solution_cost(start.solution)
 
         self.open_set |= {start}
-        print("visible",min(self.open_set))
+        #print("visible",min(self.open_set))
         
 
         while self.open_set:
@@ -386,15 +389,17 @@ class CBS(object):
             self.env.constraint_dict = P.constraint_dict
             
             conflict_dict = self.env.get_first_conflict(P.solution)
-            print(conflict_dict)
+            print("open set",len(self.open_set),"closed set",len(self.closed_set))
+            #print(conflict_dict)
             if not conflict_dict:
                 print("solution found")
 
                 return self.generate_plan(P.solution)
-            print(self.open_set)
+            #print(self.open_set)
             print("constarint found")
 
             constraint_dict = self.env.create_constraints_from_conflict(conflict_dict)
+            print(constraint_dict)
 
             for agent in constraint_dict.keys():
                 new_node = deepcopy(P)
@@ -402,9 +407,15 @@ class CBS(object):
 
                 self.env.constraint_dict = new_node.constraint_dict
                 new_node.solution = self.env.compute_solution()
+                print(self.generate_plan(new_node.solution))
+                print(self.generate_plan(P.solution))
+                print(agent)
+                print("dicy",new_node.constraint_dict[agent])
                 if not new_node.solution:
                     continue
                 new_node.cost = self.env.compute_solution_cost(new_node.solution)
+                if new_node == P:
+                    print("we have a problem")
 
                 # TODO: ending condition
                 if new_node not in self.closed_set:
@@ -415,13 +426,13 @@ class CBS(object):
     def generate_plan(self, solution):
         plan = {}
         for agent, path in solution.items():
-            print("before")
+            #print("before")
             print({'t':state.time, 'x':state.location.x, 'y':state.location.y} for state in path)
-            print( "after")
+            #print( "after")
             path_dict_list = [{'t':state.time, 'x':int(state.location.x), 'y':int(state.location.y)} for state in path]
             plan[agent] = path_dict_list
-        for m in self.env.constraint_dict.values():
-            print(str(m))
+        # for m in self.env.constraint_dict.values():
+        #     #print(str(m))
         for agent, path in solution.items():
             for state in path:
 
@@ -449,8 +460,8 @@ def main():
     agents = param['agents']
     nodes = np.array(nodes)
     graph = np.array(graph)
-    print(nodes)
-    print(graph)
+    #print(nodes)
+    #print(graph)
     
     #vertex_data = {node['vertex']: node['edge'] for node in nodes}
 
@@ -467,7 +478,7 @@ def main():
     # Write to output file
     output = dict()
     output["schedule"] = solution
-    print()
+    #print()
     temp = env.compute_solution_cost_final(solution)
     output["cost"] = temp
     with open(args.output, 'w') as output_yaml:
