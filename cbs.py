@@ -140,7 +140,7 @@ class Environment(object):
                 #print(int(x+y)*100)
                 if self.graph[index][options] > 4:
                     self.edge_info[(x,y)] = [self.nodes[options][0],self.nodes[options][1],x1,y1,options,index,"entry"]
-                    k = State(state.time + round(float(0.2*self.graph[index][options]),2), Location(x,y),state.startime)            
+                    k = State(round( state.time + float(0.2*self.graph[index][options]),2), Location(x,y),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
                 else :
@@ -160,11 +160,11 @@ class Environment(object):
                 y1 = self.edge_info[(state.location.x,state.location.y)][1]
                 options = self.edge_info[(state.location.x,state.location.y)][4]
                 index = self.edge_info[(state.location.x,state.location.y)][5]
-                k = State(state.time + round( float(self.graph[index][options])*0.6,1), Location(x,y),state.startime)            
+                k = State(round( state.time + float(self.graph[index][options])*0.6,1), Location(x,y),state.startime)            
                 if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
                 self.edge_info[(x,y)] = [x1,y1,options,index,"exit",None,None]
-                print((x,y))            
+                #print((x,y))            
             #time = self.edge_info[state.location.x+state.location.y][2]
             #self.edge_info[x+y] = [self.edge_info[state.location.x+state.location.y][0],self.edge_info[state.location.x+state.location.y][0],time]
             elif self.edge_info[(state.location.x,state.location.y)][4]=="exit":
@@ -173,7 +173,7 @@ class Environment(object):
                 options = self.edge_info[(state.location.x,state.location.y)][2]
                 index = self.edge_info[(state.location.x,state.location.y)][3]
             
-                k = State(state.time + round( float(self.graph[index][options])*0.2,1), Location(x,y),state.startime)            
+                k = State(round( state.time + float(self.graph[index][options])*0.2,1), Location(x,y),state.startime)            
                 if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                     neighbors.append(k)
         return neighbors
@@ -185,86 +185,86 @@ class Environment(object):
 
     def get_first_conflict(self, solution):
         max_t = max([len(plan) for plan in solution.values()])
-        print(max_t)
-        result = Conflict()
-        for t in range(max_t):
-            for k in range(max_t):
-                for agent_1, agent_2 in combinations(solution.keys(), 2):
-                    state_1 = self.get_state(agent_1, solution, t)
-                    state_2 = self.get_state(agent_2, solution, k)
-                    #print("1 time",state_1.time,"2 time",state_2.time)
-                    if state_1.startime > state_1.time  or state_2.startime > state_2.time:
-                        continue 
-                    if state_1 == state_2:
-                        result.time = state_1.time
-                        result.type = Conflict.VERTEX
-                        result.location_1 = state_1.location
-                        result.agent_1 = agent_1
-                        result.agent_2 = agent_2
-                        return result
+        #print(max_t)
+        # result = Conflict()
+        # for t in range(max_t):
+        #     for k in range(max_t):
+        #         for agent_1, agent_2 in combinations(solution.keys(), 2):
+        #             state_1 = self.get_state(agent_1, solution, t)
+        #             state_2 = self.get_state(agent_2, solution, k)
+        #             #print("1 time",state_1.time,"2 time",state_2.time)
+        #             if state_1.startime > state_1.time  or state_2.startime > state_2.time:
+        #                 continue 
+        #             if state_1 == state_2:
+        #                 result.time = state_1.time
+        #                 result.type = Conflict.VERTEX
+        #                 result.location_1 = state_1.location
+        #                 result.agent_1 = agent_1
+        #                 result.agent_2 = agent_2
+        #                 return result
 
-                for agent_1, agent_2 in combinations(solution.keys(), 2):
-                    state_1a = self.get_state(agent_1, solution, t)
-                    state_1b = self.get_state(agent_1, solution, t+1)
+        #         for agent_1, agent_2 in combinations(solution.keys(), 2):
+        #             state_1a = self.get_state(agent_1, solution, t)
+        #             state_1b = self.get_state(agent_1, solution, t+1)
 
-                    state_2a = self.get_state(agent_2, solution, k)
-                    state_2b = self.get_state(agent_2, solution, k+1)
-                    if state_1a.startime > state_1a.time  or state_2a.startime > state_2a.time or state_1b.startime > state_1b.time  or state_2b.startime > state_2b.time:
-                        continue 
+        #             state_2a = self.get_state(agent_2, solution, k)
+        #             state_2b = self.get_state(agent_2, solution, k+1)
+        #             if state_1a.startime > state_1a.time  or state_2a.startime > state_2a.time or state_1b.startime > state_1b.time  or state_2b.startime > state_2b.time:
+        #                 continue 
 
-                    if state_1a==state_2b and state_1b==state_2a:
-                        result.time = state_2a.time
-                        result.type = Conflict.EDGE
-                        result.agent_1 = agent_1
-                        result.agent_2 = agent_2
-                        result.location_1 = state_1a.location
-                        result.location_2 = state_1b.location
-                        return result
-                for agent_1, agent_2 in combinations(solution.keys(), 2):
-                    state_1a = self.get_state(agent_1, solution, t)
-                    state_1b = self.get_state(agent_1, solution, t+1)
+        #             if state_1a==state_2b and state_1b==state_2a:
+        #                 result.time = state_2a.time
+        #                 result.type = Conflict.EDGE
+        #                 result.agent_1 = agent_1
+        #                 result.agent_2 = agent_2
+        #                 result.location_1 = state_1a.location
+        #                 result.location_2 = state_1b.location
+        #                 return result
+        #         for agent_1, agent_2 in combinations(solution.keys(), 2):
+        #             state_1a = self.get_state(agent_1, solution, t)
+        #             state_1b = self.get_state(agent_1, solution, t+1)
 
-                    state_2a = self.get_state(agent_2, solution, k)
-                    state_2b = self.get_state(agent_2, solution, k+1)
-                    if state_1a.startime > state_1a.time  or state_2a.startime > state_2a.time or state_1b.startime > state_1b.time  or state_2b.startime > state_2b.time:
-                        continue
+        #             state_2a = self.get_state(agent_2, solution, k)
+        #             state_2b = self.get_state(agent_2, solution, k+1)
+        #             if state_1a.startime > state_1a.time  or state_2a.startime > state_2a.time or state_1b.startime > state_1b.time  or state_2b.startime > state_2b.time:
+        #                 continue
 
-                    if state_1a.time < state_2a.time and state_2a.time < state_1b.time and state_1a.location==state_2b.location and state_1b.location==state_2a.location :
+        #             if state_1a.time < state_2a.time and state_2a.time < state_1b.time and state_1a.location==state_2b.location and state_1b.location==state_2a.location :
                     
                         
-                        result.time = state_1a.time
-                        result.time_1b = state_2a.time
-                        result.type = Conflict.PASSOVER
-                        result.agent_1 = agent_1
-                        result.agent_2 = agent_2
-                        result.location_1 = state_1a.location
-                        result.location_2 = state_1b.location
-                        return result
+        #                 result.time = state_1a.time
+        #                 result.time_1b = state_2a.time
+        #                 result.type = Conflict.PASSOVER
+        #                 result.agent_1 = agent_1
+        #                 result.agent_2 = agent_2
+        #                 result.location_1 = state_1a.location
+        #                 result.location_2 = state_1b.location
+        #                 return result
                     
-                for agent_1, agent_2 in combinations(solution.keys(), 2):
-                    state_1 = self.get_state(agent_1, solution, t)
-                    state_2 = self.get_state(agent_2, solution, k)
-                    #print("1 time",state_1.time,"2 time",state_2.time)
-                    if state_1.startime > state_1.time  or state_2.startime > state_2.time:
-                        continue 
-                    if self.dist(state_1,state_2) < 0.2 and np.abs(state_1.time - state_2.time) < 2:
-                        print("new type")
-                        if state_1.time < state_2.time:
-                            result.time = state_1.time
-                            result.time_1b = state_2.time
-                            result.type = Conflict.TO_CLOSE
-                            result.location_1 = state_1.location
-                            result.agent_1 = agent_1
-                            result.agent_2 = agent_2
-                            return result
-                        else :
-                            result.time = state_2.time
-                            result.time_1b = state_1.time
-                            result.type = Conflict.TO_CLOSE
-                            result.location_1 = state_1.location
-                            result.agent_1 = agent_2
-                            result.agent_2 = agent_1
-                            return result
+        #         for agent_1, agent_2 in combinations(solution.keys(), 2):
+        #             state_1 = self.get_state(agent_1, solution, t)
+        #             state_2 = self.get_state(agent_2, solution, k)
+        #             #print("1 time",state_1.time,"2 time",state_2.time)
+        #             if state_1.startime > state_1.time  or state_2.startime > state_2.time:
+        #                 continue 
+        #             if self.dist(state_1,state_2) < 0.2 and np.abs(state_1.time - state_2.time) < 2:
+        #                 print("new type")
+        #                 if state_1.time < state_2.time:
+        #                     result.time = state_1.time
+        #                     result.time_1b = state_2.time
+        #                     result.type = Conflict.TO_CLOSE
+        #                     result.location_1 = state_1.location
+        #                     result.agent_1 = agent_1
+        #                     result.agent_2 = agent_2
+        #                     return result
+        #                 else :
+        #                     result.time = state_2.time
+        #                     result.time_1b = state_1.time
+        #                     result.type = Conflict.TO_CLOSE
+        #                     result.location_1 = state_1.location
+        #                     result.agent_1 = agent_2
+        #                     result.agent_2 = agent_1
+        #                     return result
                     
         return False
 
@@ -452,8 +452,9 @@ class CBS(object):
                 new_node.solution = self.env.compute_solution()
                 #print(self.generate_plan(new_node.solution))
                 #print(self.generate_plan(P.solution))
-                #print(agent)
-                #print("dicy",new_node.constraint_dict[agent])
+                print(agent)
+                #print(conflict_dict[agent])
+                print("dicy",new_node.constraint_dict[agent])
                 if not new_node.solution:
                     continue
                 new_node.cost = self.env.compute_solution_cost(new_node.solution)
