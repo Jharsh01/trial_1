@@ -31,7 +31,7 @@ class AStar():
         low level search 
         """
         initial_state = self.agent_dict[agent_name]["start"]
-        time_cost =1
+        time_cost = 0.1
         
         closed_set = set()
         open_set = {initial_state}
@@ -56,14 +56,15 @@ class AStar():
             closed_set |= {current}
 
             neighbor_list = self.get_neighbors(current)
+            print("current",current.location.x,current.location.y)
 
             for neighbor in neighbor_list:
                 if neighbor in closed_set:
                     continue
                 #index_c = np.where(np.all(self.nodes == [current.location.x,current.location.y],axis =1))[0][0]
-                # print("current",current.location.x,current.location.y)
-                # print("neighbor",neighbor.location.x,neighbor.location.y)
-                # print(self.nodes)
+                
+                print("neighbor",neighbor.location.x,neighbor.location.y)
+                #print(self.nodes)
                 #index_n = np.where(np.all(self.nodes == [neighbor.location.x,neighbor.location.y],axis =1))[0][0]
                 
                 step_cost = np.sqrt((current.location.x - neighbor.location.x)**2 +(current.location.y - neighbor.location.y)**2) + time_cost

@@ -131,47 +131,56 @@ class Environment(object):
                 sin = self.nodes[options][1]-state.location.y
                 cos = self.nodes[options][0]-state.location.x
                 hyp = np.sqrt((self.nodes[options][0]-state.location.x)**2 + (self.nodes[options][1]-state.location.y)**2)
-                dist = self.graph[index][options]
+                dist = float(self.graph[index][options])
                 #print("dist",dist,"hpy",hyp)
-                x1 = round(self.nodes[options][0]- (cos/hyp)*(2/dist),2)
-                y1 = round(self.nodes[options][1] - (sin/hyp)*(2/dist),)
-                x = round(state.location.x + (cos/hyp)*(2/dist),2)
-                y = round(state.location.y + (sin/hyp)*(2/dist),2)
-                print(int(x+y)*100)
+                x1 = round(self.nodes[options][0]- (cos/hyp)*(dist)*0.2,2)
+                y1 = round(self.nodes[options][1] - (sin/hyp)*(dist)*0.2,2)
+                x = round(state.location.x + (cos/hyp)*(dist)*0.2,2)
+                y = round(state.location.y + (sin/hyp)*(dist)*0.2,2)
+                #print(int(x+y)*100)
                 if self.graph[index][options] > 4:
-                    self.edge_info[int((x+y)*1000)] = [self.nodes[options][0],self.nodes[options][1],x1,y1,options,index,"entry"]
-                    k = State(state.time +2, Location(x,y),state.startime)            
+                    self.edge_info[(x,y)] = [self.nodes[options][0],self.nodes[options][1],x1,y1,options,index,"entry"]
+                    k = State(state.time + round(float(0.2*self.graph[index][options]),2), Location(x,y),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
                 else :
-                    k = State(state.time + int( self.graph[index][options]), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
+                    k = State(state.time + float(self.graph[index][options]), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
 
                     #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
 
         except:
-            print(self.edge_info.keys())
-            if self.edge_info[int((state.location.x+state.location.y)*1000)][6] == "entry":
-                x = self.edge_info[int((state.location.x+state.location.y)*1000)][2]
-                y = self.edge_info[int((state.location.x+state.location.y)*1000)][3]
-                x1 = self.edge_info[int((state.location.x+state.location.y)*1000)][0]
-                y1 = self.edge_info[int((state.location.x+state.location.y)*1000)][1]
-                options = self.edge_info[int((state.location.x+state.location.y)*1000)][4]
-                index = self.edge_info[int((state.location.x+state.location.y)*1000)][5]
-                k = State(state.time + int( self.graph[index][options])-4, Location(x,y),state.startime)            
+            #print(self.edge_info.keys())
+            #print(state.location.x,state.location.y)
+            if self.edge_info[(state.location.x,state.location.y)][6] == "entry":
+                x = self.edge_info[(state.location.x,state.location.y)][2]
+                y = self.edge_info[(state.location.x,state.location.y)][3]
+                x1 = self.edge_info[(state.location.x,state.location.y)][0]
+                y1 = self.edge_info[(state.location.x,state.location.y)][1]
+                options = self.edge_info[(state.location.x,state.location.y)][4]
+                index = self.edge_info[(state.location.x,state.location.y)][5]
+                k = State(state.time + round( float(self.graph[index][options])*0.6,1), Location(x,y),state.startime)            
                 if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
-                self.edge_info[int(x+y)*1000] = [x1,y1,options,index,"exit"]            
+                self.edge_info[(x,y)] = [x1,y1,options,index,"exit",None,None]
+                print((x,y))            
             #time = self.edge_info[state.location.x+state.location.y][2]
             #self.edge_info[x+y] = [self.edge_info[state.location.x+state.location.y][0],self.edge_info[state.location.x+state.location.y][0],time]
-            elif self.edge_info[int((state.location.x+state.location.y)*1000)][4]=="exit":
-                x = self.edge_info[int((state.location.x+state.location.y)*1000)][0]
-                y = self.edge_info[int((state.location.x+state.location.y)*1000)][1]
-                k = State(state.time + 2, Location(x,y),state.startime)            
+            elif self.edge_info[(state.location.x,state.location.y)][4]=="exit":
+                x = self.edge_info[(state.location.x,state.location.y)][0]
+                y = self.edge_info[(state.location.x,state.location.y)][1]
+                options = self.edge_info[(state.location.x,state.location.y)][2]
+                index = self.edge_info[(state.location.x,state.location.y)][3]
+            
+                k = State(state.time + round( float(self.graph[index][options])*0.2,1), Location(x,y),state.startime)            
                 if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                     neighbors.append(k)
         return neighbors
+    def dist (self,state1,state2):
+        x_diff = state1.location.x - state2.location.x
+        y_diff = state1.location.y - state2.location.y
+        return np.sqrt(x_diff**2 + y_diff**2)
 
 
     def get_first_conflict(self, solution):
@@ -238,7 +247,7 @@ class Environment(object):
                     #print("1 time",state_1.time,"2 time",state_2.time)
                     if state_1.startime > state_1.time  or state_2.startime > state_2.time:
                         continue 
-                    if state_1.location == state_2.location and np.abs(state_1.time - state_2.time) < 2:
+                    if self.dist(state_1,state_2) < 0.2 and np.abs(state_1.time - state_2.time) < 2:
                         print("new type")
                         if state_1.time < state_2.time:
                             result.time = state_1.time
@@ -262,7 +271,7 @@ class Environment(object):
     def create_constraints_from_conflict(self, conflict):
         constraint_dict = {}
         if conflict.type == Conflict.VERTEX:
-            print("touchedv")
+            #print("touchedv")
             v_constraint = VertexConstraint(conflict.time, conflict.location_1)
             constraint = Constraints()
             constraint.vertex_constraints |= {v_constraint}
@@ -270,7 +279,7 @@ class Environment(object):
             constraint_dict[conflict.agent_2] = constraint
 
         elif conflict.type == Conflict.EDGE:
-            print("touchede")
+            #print("touchede")
             constraint1 = Constraints()
             constraint2 = Constraints()
 
@@ -286,7 +295,7 @@ class Environment(object):
         elif conflict.type == Conflict.PASSOVER:
             constraint1 = Constraints()
             constraint2 = Constraints()
-            print("touched")
+            #print("touched")
 
             #e_constraint1 = EdgeConstraint(conflict.time, conflict.location_1, conflict.location_2)
             e_constraint2 = EdgeConstraint(conflict.time_1b, conflict.location_2, conflict.location_1)
@@ -296,9 +305,9 @@ class Environment(object):
 
             #constraint_dict[conflict.agent_1] = constraint1
             constraint_dict[conflict.agent_2] = constraint2
-            print(str(e_constraint2))
+            #print(str(e_constraint2))
         if conflict.type == Conflict.TO_CLOSE:
-            print("touchedv")
+            #print("touchedv")
             v_constraint = VertexConstraint(conflict.time_1b, conflict.location_1)
             constraint = Constraints()
             constraint.vertex_constraints |= {v_constraint}
@@ -423,7 +432,7 @@ class CBS(object):
             self.env.constraint_dict = P.constraint_dict
             
             conflict_dict = self.env.get_first_conflict(P.solution)
-            print("open set",len(self.open_set),"closed set",len(self.closed_set))
+            #print("open set",len(self.open_set),"closed set",len(self.closed_set))
             #print(conflict_dict)
             if not conflict_dict:
                 print("solution found")
@@ -441,10 +450,10 @@ class CBS(object):
 
                 self.env.constraint_dict = new_node.constraint_dict
                 new_node.solution = self.env.compute_solution()
-                print(self.generate_plan(new_node.solution))
-                print(self.generate_plan(P.solution))
-                print(agent)
-                print("dicy",new_node.constraint_dict[agent])
+                #print(self.generate_plan(new_node.solution))
+                #print(self.generate_plan(P.solution))
+                #print(agent)
+                #print("dicy",new_node.constraint_dict[agent])
                 if not new_node.solution:
                     continue
                 new_node.cost = self.env.compute_solution_cost(new_node.solution)
@@ -463,14 +472,14 @@ class CBS(object):
             #print("before")
             print({'t':state.time, 'x':state.location.x, 'y':state.location.y} for state in path)
             #print( "after")
-            path_dict_list = [{'t':state.time, 'x':int(state.location.x), 'y':int(state.location.y)} for state in path]
+            path_dict_list = [{'t':state.time, 'x':float(state.location.x), 'y':float(state.location.y)} for state in path]
             plan[agent] = path_dict_list
         # for m in self.env.constraint_dict.values():
         #     #print(str(m))
-        for agent, path in solution.items():
-            for state in path:
+        # for agent, path in solution.items():
+        #     for state in path:
 
-                print('t',state.time, 'x',state.location.x, 'y',state.location.y)
+                #print('t',state.time, 'x',state.location.x, 'y',state.location.y)
 
         return plan
 
