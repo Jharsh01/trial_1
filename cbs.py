@@ -132,13 +132,15 @@ class Environment(object):
                 cos = self.nodes[options][0]-state.location.x
                 hyp = np.sqrt((self.nodes[options][0]-state.location.x)**2 + (self.nodes[options][1]-state.location.y)**2)
                 dist = self.graph[index][options]
-                print("dist",dist,"hpy",hyp)
-                x = round(self.nodes[options][0]- (cos/hyp)*(2/dist),2)
-                y = round(self.nodes[options][1] - (sin/hyp)*(2/dist),2)
+                #print("dist",dist,"hpy",hyp)
+                x1 = round(self.nodes[options][0]- (cos/hyp)*(2/dist),2)
+                y1 = round(self.nodes[options][1] - (sin/hyp)*(2/dist),)
+                x = round(state.location.x + (cos/hyp)*(2/dist),2)
+                y = round(state.location.y + (sin/hyp)*(2/dist),2)
                 print(int(x+y)*100)
-                if self.graph[index][options] > 5:
-                    self.edge_info[int((x+y)*100)] = [self.nodes[options][0],self.nodes[options][1]]
-                    k = State(state.time + int( self.graph[index][options]-2), Location(x,y),state.startime)            
+                if self.graph[index][options] > 4:
+                    self.edge_info[int((x+y)*1000)] = [self.nodes[options][0],self.nodes[options][1],x1,y1,options,index,"entry"]
+                    k = State(state.time +2, Location(x,y),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
                 else :
@@ -150,13 +152,25 @@ class Environment(object):
 
         except:
             print(self.edge_info.keys())
-            x = self.edge_info[int((state.location.x+state.location.y)*100)][0]
-            y = self.edge_info[int((state.location.x+state.location.y)*100)][1]            
+            if self.edge_info[int((state.location.x+state.location.y)*1000)][6] == "entry":
+                x = self.edge_info[int((state.location.x+state.location.y)*1000)][2]
+                y = self.edge_info[int((state.location.x+state.location.y)*1000)][3]
+                x1 = self.edge_info[int((state.location.x+state.location.y)*1000)][0]
+                y1 = self.edge_info[int((state.location.x+state.location.y)*1000)][1]
+                options = self.edge_info[int((state.location.x+state.location.y)*1000)][4]
+                index = self.edge_info[int((state.location.x+state.location.y)*1000)][5]
+                k = State(state.time + int( self.graph[index][options])-4, Location(x,y),state.startime)            
+                if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                        neighbors.append(k)
+                self.edge_info[int(x+y)*1000] = [x1,y1,options,index,"exit"]            
             #time = self.edge_info[state.location.x+state.location.y][2]
             #self.edge_info[x+y] = [self.edge_info[state.location.x+state.location.y][0],self.edge_info[state.location.x+state.location.y][0],time]
-            k = State(state.time + 2, Location(x,y),state.startime)            
-            if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
-                neighbors.append(k)
+            elif self.edge_info[int((state.location.x+state.location.y)*1000)][4]=="exit":
+                x = self.edge_info[int((state.location.x+state.location.y)*1000)][0]
+                y = self.edge_info[int((state.location.x+state.location.y)*1000)][1]
+                k = State(state.time + 2, Location(x,y),state.startime)            
+                if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                    neighbors.append(k)
         return neighbors
 
 

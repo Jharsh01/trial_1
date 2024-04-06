@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 cost: 39
+=======
+cost: 44
+>>>>>>> caff37742f0f547ac6f5abc27fb792edfce9883b
 schedule:
   agent0:
   - t: 0
@@ -19,7 +23,11 @@ schedule:
   - t: 7
     x: 2
     y: 1
+<<<<<<< HEAD
   - t: 14
+=======
+  - t: 12
+>>>>>>> caff37742f0f547ac6f5abc27fb792edfce9883b
     x: 2
     y: 8
   - t: 16
@@ -29,16 +37,46 @@ schedule:
   - t: 0
     x: 4
     y: 13
+<<<<<<< HEAD
   - t: 7
     x: 2
     y: 8
   - t: 14
     x: 2
     y: 1
+=======
+  - t: 1
+    x: 4
+    y: 13
+  - t: 2
+    x: 4
+    y: 13
+  - t: 3
+    x: 4
+    y: 13
+  - t: 4
+    x: 4
+    y: 13
+  - t: 5
+    x: 4
+    y: 13
+  - t: 6
+    x: 4
+    y: 13
+  - t: 7
+    x: 4
+    y: 13
+  - t: 14
+    x: 2
+    y: 8
+>>>>>>> caff37742f0f547ac6f5abc27fb792edfce9883b
   - t: 21
+    x: 2
+    y: 1
+  - t: 28
     x: 1
     y: 5
-  - t: 23
+  - t: 30
     x: 0
     y: 6
 
