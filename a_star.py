@@ -71,7 +71,7 @@ class AStar():
                 if np.sqrt((current.location.x - neighbor.location.x)**2 +(current.location.y - neighbor.location.y)**2) ==0:
                     step_cost = time_cost
                 else:
-                    step_cost = np.sqrt((current.location.x - neighbor.location.x)**2 +(current.location.y - neighbor.location.y)**2) 
+                    step_cost = np.sqrt((current.location.x - neighbor.location.x)**2 +(current.location.y - neighbor.location.y)**2) + time_cost
                 #step_cost = fabs(current.location.x-neighbor.location.x) + fabs(current.location.y-neighbor.location.y) + 1
                 
 
