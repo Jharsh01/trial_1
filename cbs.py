@@ -14,7 +14,8 @@ from math import fabs
 from itertools import combinations
 from copy import deepcopy
 import numpy as np
-
+import csv
+import math
 from a_star import AStar
 
 class Location(object):
@@ -101,7 +102,7 @@ class Constraints(object):
             "EC: " + str([str(ec) for ec in self.edge_constraints])
 
 class Environment(object):
-    def __init__(self, dimension, agents, graph, nodes):
+    def __init__(self, dimension, agents, graph, nodes,matrix,node_list):
         self.dimension = dimension
         self.nodes = nodes
         self.graph = graph
@@ -113,8 +114,29 @@ class Environment(object):
         self.constraints = Constraints()
         self.constraint_dict = {}
         self.edge_info = {}
-
+        self.matrix = matrix
+        self.node_list = node_list
         self.a_star = AStar(self)
+
+
+    def distance(self,lat,lon):
+        lat1_rad = math.radians(33.94)
+        lon1_rad = math.radians(-118.42)
+        lat2_rad = math.radians(lat)
+        lon2_rad = math.radians(lon)
+
+    # Earth's radius in kilometers
+        R = 6371
+
+    # Differences in coordinates
+        dlat = lat2_rad - lat1_rad
+        dlon = lon2_rad - lon1_rad
+
+    # x and y distances
+        x = R * dlon * math.cos(lat1_rad)
+        y = R * dlat
+
+        return [x, y]
         
 
     def get_neighbors(self, state):
@@ -124,8 +146,8 @@ class Environment(object):
             neighbors.append(n)
 
         try:
-            index = np.where(np.all(self.nodes == [n.location.x,n.location.y],axis =1))[0][0]
-            for options in np.nonzero(self.graph[index])[0]:
+            index = np.where(np.all(self.node_list[1:][1:] == [n.location.x,n.location.y],axis =1))[0][0]
+            for options in np.nonzero(self.matrix[index][1:])[0]:
                 #print("options",options)
                 #print("node",self.nodes[options])
                 sin = self.nodes[options][1]-state.location.y
@@ -508,12 +530,23 @@ def main():
     agents = param['agents']
     nodes = np.array(nodes)
     graph = np.array(graph)
+    matrix = []
+    with open('TestWeightedMatrix.csv', 'r') as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            matrix.append(row)
+    node_list = []
+    with open('LabeledLAXLookupTable.csv', 'r') as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            node_list.append(row)
+    
     #print(nodes)
     #print(graph)
     
     #vertex_data = {node['vertex']: node['edge'] for node in nodes}
 
-    env = Environment(dimension, agents, graph,nodes)
+    env = Environment(dimension, agents, graph,nodes,matrix,node_list)
 
     # Searching
     cbs = CBS(env)
