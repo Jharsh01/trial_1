@@ -129,7 +129,7 @@ class Environment(object):
         if self.state_valid(n):
             neighbors.append(n)
             try:
-                print(self.nodes.shape)
+                #print(self.nodes.shape)
                 index = np.where(np.all(self.nodes == [n.location.x,n.location.y],axis =1))[0][0]
                 for options in np.nonzero(self.graph[index])[0]:
                     #print("options",options)
@@ -144,13 +144,13 @@ class Environment(object):
                     x = round(state.location.x + (cos/hyp)*(dist)*0.2,2)
                     y = round(state.location.y + (sin/hyp)*(dist)*0.2,2)
                     #print(int(x+y)*100)
-                    if int(self.graph[index][options]) > 4:
+                    if int(self.graph[index][options]) > 1000:
                         self.edge_info[(x,y)] = [self.nodes[options][0],self.nodes[options][1],x1,y1,options,index,"entry"]
-                        k = State(round( state.time + float(0.2*self.graph[index][options]),2), Location(x,y),state.startime)            
+                        k = State(round( state.time + float(0.002*self.graph[index][options]),2), Location(x,y),state.startime)            
                         if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                             neighbors.append(k)
                     else :
-                        k = State(state.time + float(self.graph[index][options]), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
+                        k = State(state.time + float(self.graph[index][options]*0.01), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
                         if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                             neighbors.append(k)
 
@@ -166,7 +166,7 @@ class Environment(object):
                     y1 = self.edge_info[(state.location.x,state.location.y)][1]
                     options = self.edge_info[(state.location.x,state.location.y)][4]
                     index = self.edge_info[(state.location.x,state.location.y)][5]
-                    k = State(round( state.time + float(self.graph[index][options])*0.6,1), Location(x,y),state.startime)            
+                    k = State(round( state.time + float(self.graph[index][options])*0.006,1), Location(x,y),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                             neighbors.append(k)
                     self.edge_info[(x,y)] = [x1,y1,options,index,"exit",None,None]
@@ -179,7 +179,7 @@ class Environment(object):
                     options = self.edge_info[(state.location.x,state.location.y)][2]
                     index = self.edge_info[(state.location.x,state.location.y)][3]
                 
-                    k = State(round( state.time + float(self.graph[index][options])*0.2,1), Location(x,y),state.startime)            
+                    k = State(round( state.time + float(self.graph[index][options])*0.002,1), Location(x,y),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
                 neighbors.append(k)
@@ -495,17 +495,21 @@ class CBS(object):
 
         return plan
 def distance(lat,lon):
-        lat1_rad = math.radians(33.94)
-        lon1_rad = math.radians(-118.42)
+        lat1_rad = math.radians(33.9475402)
+        lon1_rad = math.radians(-118.4276454)
         lat2_rad = math.radians(lat)
         lon2_rad = math.radians(lon)
+        #print(lat,lon)
+        #print(lat1_rad,lon1_rad,lat2_rad,lon2_rad)
 
     # Earth's radius in kilometers
-        R = 6371
+        R = 63710
 
     # Differences in coordinates
         dlat = lat2_rad - lat1_rad
         dlon = lon2_rad - lon1_rad
+        #
+        # print(dlat,dlon)
 
     # x and y distances
         x = R * dlon * math.cos(lat1_rad)
@@ -549,13 +553,17 @@ def main():
         count = 0
         for row in csvreader:
             if count != 0:
-                nodes.append(distance(float(row[1]),float(row[2])))
+                nodes.append(distance(float(row[2]),float(row[1])))
             count += 1
     #nodes = np.transpose(nodes)
     nodes = np.array(nodes)
     print(len(nodes), len(nodes[0]))
     graph = graph.astype(float)
-    
+    graph = graph/100
+    print(np.min(nodes[:][1]),"MAX ",np.max(nodes[:][1]),"MIN ",np.min(nodes[:][0])," MAX",np.max(nodes[:][0]))
+    with open('output.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(nodes)
     
     #print(nodes)
     #print(graph)

@@ -48,8 +48,8 @@ class AStar():
         while open_set:
             temp_dict = {open_item:f_score.setdefault(open_item, float("inf")) for open_item in open_set}
             current = min(temp_dict, key=temp_dict.get)
-            #if agent_name=='agent0':
-                #print("current",current.location.x,current.location.y)
+            if agent_name=='agent0':
+                print("current",current.location.x,current.location.y)
 
             if self.is_at_goal(current, agent_name):
                 return self.reconstruct_path(came_from, current)
@@ -77,7 +77,7 @@ class AStar():
 
                 
                 tentative_g_score = g_score.setdefault(current, float("inf")) + step_cost
-               # print("step_cost",step_cost,"current",index_c,"neighbour",index_n,"tentative_g",tentative_g_score,"potencial",g_score.setdefault(neighbor, float("inf")))
+                #print("step_cost",step_cost,"current",index_c,"neighbour",index_n,"tentative_g",tentative_g_score,"potencial",g_score.setdefault(neighbor, float("inf")))
                 
 
                 if neighbor not in open_set:

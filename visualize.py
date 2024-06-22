@@ -11,19 +11,36 @@ from matplotlib import animation
 import matplotlib.animation as manimation
 import argparse
 import math
+import csv
 
 Colors = ['orange', 'blue', 'green','white']
+def distance(lat,lon):
+        lat1_rad = math.radians(33.94)
+        lon1_rad = math.radians(-118.42)
+        lat2_rad = math.radians(lat)
+        lon2_rad = math.radians(lon)
 
+    # Earth's radius in kilometers
+        R = 63710
+
+    # Differences in coordinates
+        dlat = lat2_rad - lat1_rad
+        dlon = lon2_rad - lon1_rad
+
+    # x and y distances
+        x = R * dlon * math.cos(lat1_rad)
+        y = R * dlat
+
+        return [x, y]
 
 class Animation:
-  def __init__(self, map, schedule):
+  def __init__(self, map, schedule,graph,nodes):
     self.map = map
     self.schedule = schedule
     self.combined_schedule = {}
     self.combined_schedule.update(self.schedule["schedule"])
-    self.graph = map["Augmented_graph"]
-    self.nodes = map["map"]["node_Location"]
-
+    self.graph =graph
+    self.nodes = nodes
     aspect = map["map"]["dimensions"][0] / map["map"]["dimensions"][1]
 
     self.fig = plt.figure(frameon=False, figsize=(4 * aspect, 4))
@@ -36,10 +53,10 @@ class Animation:
     self.agents = dict()
     self.agent_names = dict()
     # create boundary patch
-    xmin = -0.5
-    ymin = -0.5
-    xmax = map["map"]["dimensions"][0] - 0.5
-    ymax = map["map"]["dimensions"][1] - 0.5
+    xmin = -50
+    ymin = -50
+    xmax = 50
+    ymax = 50
 
     # self.ax.relim()
     plt.xlim(xmin, xmax)
@@ -53,15 +70,15 @@ class Animation:
 
     self.patches.append(Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, facecolor='none', edgecolor='red'))
     count = 0
-    for node in map["map"]["node_Location"]:
+    for node in self.nodes:
       #print(node['vertex'][0])
       x, y = node[0],node[1]
       self.patches.append(Circle((x, y ), 0.1, facecolor='red', edgecolor='red'))
       #print(node['vertex'],"new vertex")
       for edge in np.nonzero(self.graph[count])[0]:
-        x1,y1 = map["map"]["node_Location"][edge][0],map["map"]["node_Location"][edge][1]
+        x1,y1 = self.nodes[edge][0],self.nodes[edge][1]
         print(x1,y1)
-        self.lines.append( Line2D([x,x1],[y,y1],color='blue'))
+        self.lines.append(Line2D([x, x1], [y, y1], color='blue', linewidth=0.2))
         # self.ax.add_line(line)
       count +=1
 
@@ -190,11 +207,33 @@ if __name__ == "__main__":
 
   with open(args.map) as map_file:
     map = yaml.load(map_file, Loader=yaml.FullLoader)
+  nodes = []
+  matrix = []
+  with open('TestWeightedMatrix.csv', 'r') as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            matrix.append(row)
+    #print(len(matrix), len(matrix[0]))
+  graph = np.array(matrix)
+  graph = graph[1:, 1:]
+  with open('LabeledLAXLookupTable.csv', 'r') as csvfile:
+        csvreader = csv.reader(csvfile)
+        count = 0
+        for row in csvreader:
+            if count != 0:
+                nodes.append(distance(float(row[2]),float(row[1])))
+            count += 1
+    #nodes = np.transpose(nodes)
+  nodes = np.array(nodes)
+  print(len(nodes), len(nodes[0]))
+  graph = graph.astype(float)
+  graph = graph / 100
+
 
   with open(args.schedule) as states_file:
     schedule = yaml.load(states_file, Loader=yaml.FullLoader)
 
-  animation = Animation(map, schedule)
+  animation = Animation(map, schedule,graph,nodes)
 
   if args.video:
     animation.save(args.video, args.speed)
