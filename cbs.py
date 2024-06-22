@@ -17,6 +17,7 @@ import numpy as np
 import csv
 import math
 from a_star import AStar
+import numpy as np
 
 class Location(object):
     def __init__(self, x=-1, y=-1):
@@ -102,7 +103,7 @@ class Constraints(object):
             "EC: " + str([str(ec) for ec in self.edge_constraints])
 
 class Environment(object):
-    def __init__(self, dimension, agents, graph, nodes,matrix,node_list):
+    def __init__(self, dimension, agents, graph, nodes):
         self.dimension = dimension
         self.nodes = nodes
         self.graph = graph
@@ -114,29 +115,12 @@ class Environment(object):
         self.constraints = Constraints()
         self.constraint_dict = {}
         self.edge_info = {}
-        self.matrix = matrix
-        self.node_list = node_list
+        
+        
         self.a_star = AStar(self)
 
 
-    def distance(self,lat,lon):
-        lat1_rad = math.radians(33.94)
-        lon1_rad = math.radians(-118.42)
-        lat2_rad = math.radians(lat)
-        lon2_rad = math.radians(lon)
-
-    # Earth's radius in kilometers
-        R = 6371
-
-    # Differences in coordinates
-        dlat = lat2_rad - lat1_rad
-        dlon = lon2_rad - lon1_rad
-
-    # x and y distances
-        x = R * dlon * math.cos(lat1_rad)
-        y = R * dlat
-
-        return [x, y]
+    
         
 
     def get_neighbors(self, state):
@@ -144,60 +128,61 @@ class Environment(object):
         n = State(state.time + 1, state.location,state.startime)
         if self.state_valid(n):
             neighbors.append(n)
+            try:
+                print(self.nodes.shape)
+                index = np.where(np.all(self.nodes == [n.location.x,n.location.y],axis =1))[0][0]
+                for options in np.nonzero(self.graph[index])[0]:
+                    #print("options",options)
+                    #print("node",self.nodes[options])
+                    sin = self.nodes[options][1]-state.location.y
+                    cos = self.nodes[options][0]-state.location.x
+                    hyp = np.sqrt((self.nodes[options][0]-state.location.x)**2 + (self.nodes[options][1]-state.location.y)**2)
+                    dist = float(self.graph[index][options])
+                    #print("dist",dist,"hpy",hyp)
+                    x1 = round(self.nodes[options][0]- (cos/hyp)*(dist)*0.2,2)
+                    y1 = round(self.nodes[options][1] - (sin/hyp)*(dist)*0.2,2)
+                    x = round(state.location.x + (cos/hyp)*(dist)*0.2,2)
+                    y = round(state.location.y + (sin/hyp)*(dist)*0.2,2)
+                    #print(int(x+y)*100)
+                    if int(self.graph[index][options]) > 4:
+                        self.edge_info[(x,y)] = [self.nodes[options][0],self.nodes[options][1],x1,y1,options,index,"entry"]
+                        k = State(round( state.time + float(0.2*self.graph[index][options]),2), Location(x,y),state.startime)            
+                        if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                            neighbors.append(k)
+                    else :
+                        k = State(state.time + float(self.graph[index][options]), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
+                        if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                            neighbors.append(k)
 
-        try:
-            index = np.where(np.all(self.node_list[1:][1:] == [n.location.x,n.location.y],axis =1))[0][0]
-            for options in np.nonzero(self.matrix[index][1:])[0]:
-                #print("options",options)
-                #print("node",self.nodes[options])
-                sin = self.nodes[options][1]-state.location.y
-                cos = self.nodes[options][0]-state.location.x
-                hyp = np.sqrt((self.nodes[options][0]-state.location.x)**2 + (self.nodes[options][1]-state.location.y)**2)
-                dist = float(self.graph[index][options])
-                #print("dist",dist,"hpy",hyp)
-                x1 = round(self.nodes[options][0]- (cos/hyp)*(dist)*0.2,2)
-                y1 = round(self.nodes[options][1] - (sin/hyp)*(dist)*0.2,2)
-                x = round(state.location.x + (cos/hyp)*(dist)*0.2,2)
-                y = round(state.location.y + (sin/hyp)*(dist)*0.2,2)
-                #print(int(x+y)*100)
-                if self.graph[index][options] > 4:
-                    self.edge_info[(x,y)] = [self.nodes[options][0],self.nodes[options][1],x1,y1,options,index,"entry"]
-                    k = State(round( state.time + float(0.2*self.graph[index][options]),2), Location(x,y),state.startime)            
+                        #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
+
+            except:
+                #print(self.edge_info.keys())
+                #print(state.location.x,state.location.y)
+                if self.edge_info[(state.location.x,state.location.y)][6] == "entry":
+                    x = self.edge_info[(state.location.x,state.location.y)][2]
+                    y = self.edge_info[(state.location.x,state.location.y)][3]
+                    x1 = self.edge_info[(state.location.x,state.location.y)][0]
+                    y1 = self.edge_info[(state.location.x,state.location.y)][1]
+                    options = self.edge_info[(state.location.x,state.location.y)][4]
+                    index = self.edge_info[(state.location.x,state.location.y)][5]
+                    k = State(round( state.time + float(self.graph[index][options])*0.6,1), Location(x,y),state.startime)            
+                    if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
+                            neighbors.append(k)
+                    self.edge_info[(x,y)] = [x1,y1,options,index,"exit",None,None]
+                    #print((x,y))            
+                #time = self.edge_info[state.location.x+state.location.y][2]
+                #self.edge_info[x+y] = [self.edge_info[state.location.x+state.location.y][0],self.edge_info[state.location.x+state.location.y][0],time]
+                elif self.edge_info[(state.location.x,state.location.y)][4]=="exit":
+                    x = self.edge_info[(state.location.x,state.location.y)][0]
+                    y = self.edge_info[(state.location.x,state.location.y)][1]
+                    options = self.edge_info[(state.location.x,state.location.y)][2]
+                    index = self.edge_info[(state.location.x,state.location.y)][3]
+                
+                    k = State(round( state.time + float(self.graph[index][options])*0.2,1), Location(x,y),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
-                else :
-                    k = State(state.time + float(self.graph[index][options]), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
-                    if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
-                        neighbors.append(k)
-
-                    #print("uploaded index",options,"coodinates",self.nodes[options][0],self.nodes[options][1])
-
-        except:
-            #print(self.edge_info.keys())
-            #print(state.location.x,state.location.y)
-            if self.edge_info[(state.location.x,state.location.y)][6] == "entry":
-                x = self.edge_info[(state.location.x,state.location.y)][2]
-                y = self.edge_info[(state.location.x,state.location.y)][3]
-                x1 = self.edge_info[(state.location.x,state.location.y)][0]
-                y1 = self.edge_info[(state.location.x,state.location.y)][1]
-                options = self.edge_info[(state.location.x,state.location.y)][4]
-                index = self.edge_info[(state.location.x,state.location.y)][5]
-                k = State(round( state.time + float(self.graph[index][options])*0.6,1), Location(x,y),state.startime)            
-                if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
-                        neighbors.append(k)
-                self.edge_info[(x,y)] = [x1,y1,options,index,"exit",None,None]
-                #print((x,y))            
-            #time = self.edge_info[state.location.x+state.location.y][2]
-            #self.edge_info[x+y] = [self.edge_info[state.location.x+state.location.y][0],self.edge_info[state.location.x+state.location.y][0],time]
-            elif self.edge_info[(state.location.x,state.location.y)][4]=="exit":
-                x = self.edge_info[(state.location.x,state.location.y)][0]
-                y = self.edge_info[(state.location.x,state.location.y)][1]
-                options = self.edge_info[(state.location.x,state.location.y)][2]
-                index = self.edge_info[(state.location.x,state.location.y)][3]
-            
-                k = State(round( state.time + float(self.graph[index][options])*0.2,1), Location(x,y),state.startime)            
-                if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
-                    neighbors.append(k)
+                neighbors.append(k)
         return neighbors
     def dist (self,state1,state2):
         x_diff = state1.location.x - state2.location.x
@@ -509,6 +494,24 @@ class CBS(object):
                 #print('t',state.time, 'x',state.location.x, 'y',state.location.y)
 
         return plan
+def distance(lat,lon):
+        lat1_rad = math.radians(33.94)
+        lon1_rad = math.radians(-118.42)
+        lat2_rad = math.radians(lat)
+        lon2_rad = math.radians(lon)
+
+    # Earth's radius in kilometers
+        R = 6371
+
+    # Differences in coordinates
+        dlat = lat2_rad - lat1_rad
+        dlon = lon2_rad - lon1_rad
+
+    # x and y distances
+        x = R * dlon * math.cos(lat1_rad)
+        y = R * dlat
+
+        return [x, y]
 
 
 def main():
@@ -525,28 +528,41 @@ def main():
             print(exc)
 
     dimension = param["map"]["dimensions"]
-    nodes = param["map"]["node_Location"]
-    graph = param["Augmented_graph"]
+    #graph = param["Augmented_graph"]
     agents = param['agents']
-    nodes = np.array(nodes)
-    graph = np.array(graph)
+    nodes = []
+    #graph = np.array(graph)
     matrix = []
     with open('TestWeightedMatrix.csv', 'r') as csvfile:
         csvreader = csv.reader(csvfile)
         for row in csvreader:
             matrix.append(row)
-    node_list = []
+    #print(len(matrix), len(matrix[0]))
+    graph = np.array(matrix)
+    graph = graph[1:, 1:]
+    # if rows != cols:
+    #     size = max(rows, cols)
+    #     graph = np.pad(graph, ((0, size - rows), (0, size - cols)), mode='constant')
+    
     with open('LabeledLAXLookupTable.csv', 'r') as csvfile:
         csvreader = csv.reader(csvfile)
+        count = 0
         for row in csvreader:
-            node_list.append(row)
+            if count != 0:
+                nodes.append(distance(float(row[1]),float(row[2])))
+            count += 1
+    #nodes = np.transpose(nodes)
+    nodes = np.array(nodes)
+    print(len(nodes), len(nodes[0]))
+    graph = graph.astype(float)
+    
     
     #print(nodes)
     #print(graph)
     
     #vertex_data = {node['vertex']: node['edge'] for node in nodes}
 
-    env = Environment(dimension, agents, graph,nodes,matrix,node_list)
+    env = Environment(dimension, agents, graph,nodes)
 
     # Searching
     cbs = CBS(env)
