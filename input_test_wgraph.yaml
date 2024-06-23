@@ -1,10 +1,10 @@
 agents:
 -   start: 0
-    goal: 7
+    goal: 100
     startime: 0
     name: agent0
-# -   start: 8
-#     goal: 4
+# -   start: 200
+#     goal: 40
 #     startime: 0
 #     name: agent1
 
@@ -21,7 +21,7 @@ Augmented_graph:
 
 
 map:
-    dimensions: [100, 100]
+    dimensions: [65, 40]
     node_Location: 
     -   !!python/tuple [0,0]
     -   !!python/tuple [1,1]

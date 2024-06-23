@@ -48,8 +48,8 @@ class AStar():
         while open_set:
             temp_dict = {open_item:f_score.setdefault(open_item, float("inf")) for open_item in open_set}
             current = min(temp_dict, key=temp_dict.get)
-            if agent_name=='agent0':
-                print("current",current.location.x,current.location.y)
+            #if agent_name=='agent0':
+            print("current",current.location.x,current.location.y)
 
             if self.is_at_goal(current, agent_name):
                 return self.reconstruct_path(came_from, current)
@@ -65,7 +65,7 @@ class AStar():
                     continue
                 #index_c = np.where(np.all(self.nodes == [current.location.x,current.location.y],axis =1))[0][0]
                 #if agent_name=='agent0':
-                    #print("neighbor",neighbor.location.x,neighbor.location.y)
+                #print("neighbor",neighbor.location.x,neighbor.location.y)
                 #print(self.nodes)
                 #index_n = np.where(np.all(self.nodes == [neighbor.location.x,neighbor.location.y],axis =1))[0][0]
                 if np.sqrt((current.location.x - neighbor.location.x)**2 +(current.location.y - neighbor.location.y)**2) ==0:

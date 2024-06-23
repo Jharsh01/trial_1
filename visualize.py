@@ -15,12 +15,13 @@ import csv
 
 Colors = ['orange', 'blue', 'green','white']
 def distance(lat,lon):
-        lat1_rad = math.radians(33.94)
-        lon1_rad = math.radians(-118.42)
+        lat1_rad = math.radians(33.9475402)
+        lon1_rad = math.radians(-118.4276454)
+        lat2_rad = math.radians(lat)
         lat2_rad = math.radians(lat)
         lon2_rad = math.radians(lon)
 
-    # Earth's radius in kilometers
+    # Earth's radius in 100m
         R = 63710
 
     # Differences in coordinates
@@ -53,10 +54,10 @@ class Animation:
     self.agents = dict()
     self.agent_names = dict()
     # create boundary patch
-    xmin = -50
-    ymin = -50
+    xmin = -15
+    ymin = -25
     xmax = 50
-    ymax = 50
+    ymax = 15
 
     # self.ax.relim()
     plt.xlim(xmin, xmax)
@@ -73,10 +74,14 @@ class Animation:
     for node in self.nodes:
       #print(node['vertex'][0])
       x, y = node[0],node[1]
+      print("nodes")
+      print(x,y)
       self.patches.append(Circle((x, y ), 0.1, facecolor='red', edgecolor='red'))
       #print(node['vertex'],"new vertex")
       for edge in np.nonzero(self.graph[count])[0]:
+        #print(np.nonzero(self.graph[count])[0])
         x1,y1 = self.nodes[edge][0],self.nodes[edge][1]
+        print("sub nodes")
         print(x1,y1)
         self.lines.append(Line2D([x, x1], [y, y1], color='blue', linewidth=0.2))
         # self.ax.add_line(line)
@@ -216,6 +221,7 @@ if __name__ == "__main__":
     #print(len(matrix), len(matrix[0]))
   graph = np.array(matrix)
   graph = graph[1:, 1:]
+  graph = graph.astype(float)
   with open('LabeledLAXLookupTable.csv', 'r') as csvfile:
         csvreader = csv.reader(csvfile)
         count = 0

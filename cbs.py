@@ -144,13 +144,13 @@ class Environment(object):
                     x = round(state.location.x + (cos/hyp)*(dist)*0.2,2)
                     y = round(state.location.y + (sin/hyp)*(dist)*0.2,2)
                     #print(int(x+y)*100)
-                    if int(self.graph[index][options]) > 1000:
+                    if int(self.graph[index][options]) > 100000000:
                         self.edge_info[(x,y)] = [self.nodes[options][0],self.nodes[options][1],x1,y1,options,index,"entry"]
-                        k = State(round( state.time + float(0.002*self.graph[index][options]),2), Location(x,y),state.startime)            
+                        k = State(round( state.time + float(0.2*self.graph[index][options]),2), Location(x,y),state.startime)            
                         if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                             neighbors.append(k)
                     else :
-                        k = State(state.time + float(self.graph[index][options]*0.01), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
+                        k = State(state.time + float(self.graph[index][options]), Location(self.nodes[options][0],self.nodes[options][1]),state.startime)            
                         if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                             neighbors.append(k)
 
@@ -166,7 +166,7 @@ class Environment(object):
                     y1 = self.edge_info[(state.location.x,state.location.y)][1]
                     options = self.edge_info[(state.location.x,state.location.y)][4]
                     index = self.edge_info[(state.location.x,state.location.y)][5]
-                    k = State(round( state.time + float(self.graph[index][options])*0.006,1), Location(x,y),state.startime)            
+                    k = State(round( state.time + float(self.graph[index][options])*0.6,1), Location(x,y),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                             neighbors.append(k)
                     self.edge_info[(x,y)] = [x1,y1,options,index,"exit",None,None]
@@ -179,7 +179,7 @@ class Environment(object):
                     options = self.edge_info[(state.location.x,state.location.y)][2]
                     index = self.edge_info[(state.location.x,state.location.y)][3]
                 
-                    k = State(round( state.time + float(self.graph[index][options])*0.002,1), Location(x,y),state.startime)            
+                    k = State(round( state.time + float(self.graph[index][options])*0.2,1), Location(x,y),state.startime)            
                     if self.state_valid(k) and self.transition_valid(state, k) and k.time > k.startime:
                         neighbors.append(k)
                 neighbors.append(k)
